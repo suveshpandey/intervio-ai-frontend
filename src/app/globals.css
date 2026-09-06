@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/*
+  Intervio design system — dark-first, focused.
+  Premium dev-tool aesthetic: near-black canvas, one indigo accent, hairline borders.
+  Dark is the default (:root). Light mode is derived under [data-theme='light'].
+*/
+:root {
+  --background: #0a0a0b;
+  --foreground: #fafafa;
+  --card: #141416;
+  --card-foreground: #fafafa;
+  --border: #26262a;
+  --input: #26262a;
+  --muted: #1c1c1f;
+  --muted-foreground: #a1a1aa;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --ring: #6366f1;
+
+  /* Semantic — also the claim-audit bands (supported / partial / insufficient). */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+
+  --radius: 0.625rem;
+}
+
+[data-theme='light'] {
+  --background: #fbfbfb;
+  --foreground: #18181b;
+  --card: #ffffff;
+  --card-foreground: #18181b;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --ring: #6366f1;
+}
+
+/* Expose tokens as Tailwind utilities: bg-background, text-foreground, border-border, … */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-destructive: var(--destructive);
+  --radius-base: var(--radius);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
