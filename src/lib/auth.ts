@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, API_URL_PUBLIC } from '@/lib/api';
 import type { PublicUser } from '@/lib/contracts';
@@ -22,6 +24,16 @@ export function useSession() {
     },
   });
   return { user: query.data ?? null, isLoading: query.isLoading };
+}
+
+/** Redirect to /login once we know there's no session. Use on protected pages. */
+export function useRequireAuth() {
+  const router = useRouter();
+  const { user, isLoading } = useSession();
+  useEffect(() => {
+    if (!isLoading && !user) router.replace('/login');
+  }, [isLoading, user, router]);
+  return { user, isLoading };
 }
 
 export function useLogin() {

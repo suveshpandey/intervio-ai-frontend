@@ -11,10 +11,12 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
+  // Let the browser set multipart boundaries; only JSON bodies get an explicit type.
+  const isForm = init.body instanceof FormData;
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...init.headers },
+    headers: { ...(isForm ? {} : { 'Content-Type': 'application/json' }), ...init.headers },
   });
 
   // Access token expired → try a single silent refresh, then replay the request.
@@ -37,6 +39,7 @@ export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined }),
+  upload: <T>(path: string, form: FormData) => request<T>(path, { method: 'POST', body: form }),
 };
 
 export const API_URL_PUBLIC = API_URL;

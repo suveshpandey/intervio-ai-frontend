@@ -16,3 +16,57 @@ export interface PublicUser {
   avatarUrl: string | null;
   authProvider: 'email' | 'google';
 }
+
+// ── Phase 1: Upload & Extract ──
+export type ParseStatus = 'pending' | 'processing' | 'done' | 'failed';
+export type ClaimStatus = 'pending' | 'selected' | 'verified' | 'partial' | 'insufficient';
+
+export interface ProjectItem {
+  name: string;
+  description: string;
+  tech: string[];
+}
+
+export interface ExperienceItem {
+  company?: string;
+  role?: string;
+  duration?: string;
+  highlights: string[];
+}
+
+export interface ExtractedResume {
+  skills: string[];
+  projects: ProjectItem[];
+  experience: ExperienceItem[];
+  summary?: string;
+}
+
+export interface Claim {
+  id: string;
+  text: string;
+  category: string; // scale | impact | ownership | tech-depth | leadership | other
+  relatedSkills: string[];
+  importance: number; // 1–5
+  priority: number; // 1–5
+  status: ClaimStatus;
+  confidence: number | null;
+}
+
+export interface Resume {
+  id: string;
+  fileName: string;
+  parseStatus: ParseStatus;
+  parseError: string | null;
+  extracted: ExtractedResume | null;
+  createdAt: string;
+}
+
+export interface ResumeDetail {
+  resume: Resume;
+  claims: Claim[];
+}
+
+export interface JobDescription {
+  id: string;
+  requiredSkills: string[];
+}
