@@ -6,22 +6,24 @@
   Dark is the default (:root). Light mode is derived under [data-theme='light'].
 */
 :root {
-  --background: #0a0a0b;
-  --foreground: #fafafa;
-  --card: #141416;
-  --card-foreground: #fafafa;
-  --border: #26262a;
-  --input: #26262a;
-  --muted: #1c1c1f;
-  --muted-foreground: #a1a1aa;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --ring: #6366f1;
+  /* Deep-ocean navy. Three stacked surfaces give real depth without glow. */
+  --background: #00111c;
+  --foreground: #f2f4ff;
+  --card: #001523;
+  --card-foreground: #f2f4ff;
+  --surface: #001a2c; /* highest elevation (chips, inner panels) */
+  --border: #0f3049;
+  --input: #0f3049;
+  --muted: #001a2c;
+  --muted-foreground: #7f9cb5;
+  --primary: #a9d3ff; /* one cool accent — used sparingly */
+  --primary-foreground: #00111c; /* dark navy sits on the light-blue fill */
+  --ring: #a9d3ff;
 
   /* Semantic — also the claim-audit bands (supported / partial / insufficient). */
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --destructive: #ef4444;
+  --success: #5bd99a;
+  --warning: #f0b74e;
+  --destructive: #f2777a;
 
   --radius: 0.625rem;
 }
@@ -46,6 +48,7 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+  --color-surface: var(--surface);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-muted: var(--muted);
@@ -70,4 +73,101 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Staggered entrance for the blueprint journey (nodes rise + fade in). */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
+/* ---- Landing-page decoration (dark-first, restrained) ---- */
+
+/* Headline gradient: crisp off-white fading to a cool blue-grey. */
+.text-gradient {
+  background-image: linear-gradient(180deg, #f2f4ff 0%, #6d8aa4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Faint blueprint grid, blue-tinted, masked so it dissolves toward the edges. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(169, 211, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(169, 211, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Hairline that fades in from both ends — used as section dividers. */
+.rule-fade {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent
+  );
+}
+
+/* Thin card-top highlight for a subtle glass edge. */
+.edge-top {
+  position: relative;
+}
+.edge-top::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(169, 211, 255, 0.16), transparent);
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-float {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.eq-bar {
+  transform-origin: center;
+  animation: eq 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .eq-bar {
+    animation: none;
+  }
 }

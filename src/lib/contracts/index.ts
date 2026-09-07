@@ -70,3 +70,31 @@ export interface JobDescription {
   id: string;
   requiredSkills: string[];
 }
+
+// ── Phase 2: Interview blueprint ──
+export type Level = 'junior' | 'mid' | 'senior';
+export type Difficulty = 'easy' | 'standard' | 'hard';
+
+export interface PlanSection {
+  key: string;
+  title: string;
+  budgetMin: number;
+}
+
+export interface Blueprint {
+  id: string;
+  resumeId: string;
+  jdId: string | null;
+  role: string;
+  level: Level;
+  difficulty: Difficulty;
+  durationMin: number;
+  sections: PlanSection[];
+  probeClaimIds: string[];
+  createdAt: string;
+}
+
+export interface BlueprintWithClaims {
+  blueprint: Blueprint;
+  probedClaims: Claim[];
+}

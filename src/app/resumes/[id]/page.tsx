@@ -57,7 +57,10 @@ export default function ResumeResultPage() {
 
               {extracted && <ExtractionSections extracted={extracted} />}
 
-              <div className="border-t border-border pt-8">
+              <div className="flex items-center gap-3 border-t border-border pt-8">
+                <Link href={`/review/${resume.id}${jdId ? `?jd=${jdId}` : ''}`}>
+                  <Button>Set up interview</Button>
+                </Link>
                 <Link href="/new">
                   <Button variant="outline">Analyze another</Button>
                 </Link>
