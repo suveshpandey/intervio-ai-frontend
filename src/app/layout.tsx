@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Intervio — You said it. Now prove it.',
+  title: 'Intervio — Go beyond the resume.',
   description: 'A browser voice interviewer that checks whether you can defend your resume.',
 };
 

@@ -171,3 +171,85 @@ body {
     animation: none;
   }
 }
+
+/* ---- Loading language ---- */
+
+/* Button sweep: a soft light band glides left → right while pending. */
+@keyframes btn-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.btn-sweep {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.55) 55%,
+    transparent 100%
+  );
+  animation: btn-sweep 1.15s ease-in-out infinite;
+}
+/* On light-blue (primary) buttons a white sweep reads as a glow; on dark
+   (outline) buttons the accent tint is more visible. */
+.btn-sweep-accent {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(169, 211, 255, 0.35) 50%,
+    transparent 100%
+  );
+}
+
+/* Page loader: a dashed rule whose dashes march left → right, edges faded. */
+@keyframes dash-march {
+  to {
+    background-position: 22px 0;
+  }
+}
+.dash-line {
+  height: 2px;
+  width: 180px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--primary) 0 11px,
+    transparent 11px 22px
+  );
+  background-size: 22px 100%;
+  animation: dash-march 0.7s linear infinite;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+}
+
+/* Skeleton: muted block with a slow shimmer sweep. */
+@keyframes skeleton-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--muted);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(169, 211, 255, 0.08), transparent);
+  animation: skeleton-sweep 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-sweep,
+  .dash-line,
+  .skeleton::after {
+    animation: none;
+  }
+}

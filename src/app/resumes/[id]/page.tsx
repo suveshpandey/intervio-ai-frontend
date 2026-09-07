@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useRequireAuth } from '@/lib/auth';
 import { useResume, useJd } from '@/lib/resumes';
-import type { Claim, ExtractedResume } from '@/lib/contracts';
+import type { Claim, ExtractedResume, ProjectItem } from '@/lib/contracts';
 
 export default function ResumeResultPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
@@ -130,7 +130,7 @@ function ClaimsSection({ claims }: { claims: Claim[] }) {
         <span className="text-sm text-muted-foreground">{claims.length} found</span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        &ldquo;You said it. Now prove it.&rdquo; These are what the interview will probe.
+        &ldquo;Go beyond the resume.&rdquo; These are what the interview will probe.
       </p>
       <ul className="mt-5 space-y-3">
         {claims.map((c) => (
@@ -176,23 +176,7 @@ function ExtractionSections({ extracted }: { extracted: ExtractedResume }) {
         </Section>
       )}
 
-      {extracted.projects.length > 0 && (
-        <Section title="Projects">
-          <div className="space-y-4">
-            {extracted.projects.map((p, i) => (
-              <div key={i}>
-                <p className="font-medium">{p.name}</p>
-                {p.description && <p className="mt-1 text-sm text-muted-foreground">{p.description}</p>}
-                {p.tech.length > 0 && (
-                  <div className="mt-2">
-                    <ChipList items={p.tech} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
+      <ProjectSections projects={extracted.projects} />
 
       {extracted.experience.length > 0 && (
         <Section title="Experience">
@@ -218,6 +202,65 @@ function ExtractionSections({ extracted }: { extracted: ExtractedResume }) {
         </Section>
       )}
     </>
+  );
+}
+
+function ProjectSections({ projects }: { projects: ProjectItem[] }) {
+  const personal = projects.filter((p) => p.origin !== 'professional');
+  const professional = projects.filter((p) => p.origin === 'professional');
+
+  // Group professional projects by the company they were built at.
+  const byOrg = new Map<string, ProjectItem[]>();
+  for (const p of professional) {
+    const org = p.org?.trim() || 'Work';
+    const list = byOrg.get(org);
+    if (list) list.push(p);
+    else byOrg.set(org, [p]);
+  }
+
+  return (
+    <>
+      {personal.length > 0 && (
+        <Section title="Projects">
+          <div className="space-y-4">
+            {personal.map((p, i) => (
+              <ProjectCard key={i} project={p} />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {professional.length > 0 && (
+        <Section title="Professional work">
+          <div className="space-y-6">
+            {[...byOrg.entries()].map(([org, items]) => (
+              <div key={org}>
+                <p className="mb-3 text-sm font-medium text-muted-foreground">at {org}</p>
+                <div className="space-y-4">
+                  {items.map((p, i) => (
+                    <ProjectCard key={i} project={p} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+    </>
+  );
+}
+
+function ProjectCard({ project }: { project: ProjectItem }) {
+  return (
+    <div>
+      <p className="font-medium">{project.name}</p>
+      {project.description && <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>}
+      {project.tech.length > 0 && (
+        <div className="mt-2">
+          <ChipList items={project.tech} />
+        </div>
+      )}
+    </div>
   );
 }
 

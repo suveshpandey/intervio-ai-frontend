@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { AppHeader } from '@/components/app-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PageLoader } from '@/components/ui/page-loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useRequireAuth } from '@/lib/auth';
 import { useResumes } from '@/lib/resumes';
 import type { ParseStatus } from '@/lib/contracts';
@@ -20,7 +22,7 @@ export default function DashboardPage() {
   const resumes = useResumes();
 
   if (isLoading || !user) {
-    return <main className="grid min-h-dvh place-items-center text-muted-foreground">Loading…</main>;
+    return <PageLoader fullscreen label="Loading your dashboard…" />;
   }
 
   const items = resumes.data?.resumes ?? [];
@@ -42,7 +44,19 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {items.length === 0 ? (
+        {resumes.isLoading ? (
+          <ul className="mt-10 divide-y divide-border overflow-hidden rounded-[var(--radius)] border border-border">
+            {Array.from({ length: 3 }, (_, i) => (
+              <li key={i} className="flex items-center justify-between gap-4 px-4 py-4">
+                <div className="min-w-0 space-y-2">
+                  <Skeleton className="h-4 w-52" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </li>
+            ))}
+          </ul>
+        ) : items.length === 0 ? (
           <div className="mt-10 grid place-items-center rounded-[var(--radius)] border border-dashed border-border py-20 text-center">
             <p className="text-sm text-muted-foreground">No resumes yet.</p>
           </div>

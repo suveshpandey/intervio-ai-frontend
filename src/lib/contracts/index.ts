@@ -25,6 +25,8 @@ export interface ProjectItem {
   name: string;
   description: string;
   tech: string[];
+  origin?: 'personal' | 'professional';
+  org?: string;
 }
 
 export interface ExperienceItem {

@@ -1,24 +1,12 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 /* ------------------------------------------------------------------ */
-/* Brand mark + icons (inline, stroke 1.5 — no icon dependency)        */
+/* Icons (inline, stroke 1.5 — no icon dependency)                     */
 /* ------------------------------------------------------------------ */
 
 type IconProps = { className?: string };
-
-function Logo({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M4 12h1M8 8v8M12 5v14M16 9v6M20 12h0"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function IconFile({ className }: IconProps) {
   return (
@@ -133,16 +121,13 @@ function IconArrow({ className }: IconProps) {
 /* ------------------------------------------------------------------ */
 
 function Brand({ compact = false }: { compact?: boolean }) {
+  const size = compact ? 24 : 32;
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <span
-        className={`flex items-center justify-center rounded-lg border border-border bg-surface text-primary ${
-          compact ? 'h-6 w-6' : 'h-8 w-8'
-        }`}
-      >
-        <Logo className={compact ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} />
+      <Image src="/logo.png" alt="Intervio" width={size} height={size} priority />
+      <span className="text-[15px] font-semibold tracking-tight">
+        Intervio<span className="text-muted-foreground">.ai</span>
       </span>
-      <span className="text-[15px] font-semibold tracking-tight">Intervio</span>
     </Link>
   );
 }
@@ -391,9 +376,9 @@ export default function LandingPage() {
           </span>
 
           <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.04] tracking-tight sm:text-6xl">
-            <span className="text-gradient">You said it.</span>
+            <span className="text-gradient">Go beyond</span>
             <br />
-            <span className="text-primary">Now prove it.</span>
+            <span className="text-primary">the resume.</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
@@ -580,7 +565,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row">
           <div className="flex items-center gap-2.5">
             <Brand compact />
-            <span className="ml-1 text-sm text-muted-foreground">You said it. Now prove it.</span>
+            <span className="ml-1 text-sm text-muted-foreground">Go beyond the resume.</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/login" className="transition-colors hover:text-foreground">
