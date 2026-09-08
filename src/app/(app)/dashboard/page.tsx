@@ -26,11 +26,20 @@ export default function DashboardPage() {
   const items = resumes.data?.resumes ?? [];
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
+  const ready = items.filter((r) => r.parseStatus === 'done').length;
+  const inProgress = items.filter(
+    (r) => r.parseStatus === 'pending' || r.parseStatus === 'processing',
+  ).length;
+
   return (
     <>
       <PageHeader title={`Welcome back${firstName ? `, ${firstName}` : ''}.`} />
 
       <Spotlight />
+
+      {!resumes.isLoading && items.length > 0 && (
+        <Stats total={items.length} ready={ready} inProgress={inProgress} />
+      )}
 
       <section className="mt-10">
         {resumes.isLoading ? (
@@ -57,6 +66,30 @@ export default function DashboardPage() {
         )}
       </section>
     </>
+  );
+}
+
+/* ── Analytics (sharp, hairline-divided strip) ── */
+
+function Stats({ total, ready, inProgress }: { total: number; ready: number; inProgress: number }) {
+  return (
+    <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card">
+      <StatCell label="Resumes" value={total} />
+      <StatCell label="Ready" value={ready} dot="bg-success" />
+      <StatCell label="In progress" value={inProgress} dot="bg-warning" />
+    </div>
+  );
+}
+
+function StatCell({ label, value, dot }: { label: string; value: number; dot?: string }) {
+  return (
+    <div className="px-5 py-4">
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+        {dot && <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />}
+        {label}
+      </div>
+      <div className="mt-1.5 text-2xl font-semibold tabular-nums">{value}</div>
+    </div>
   );
 }
 
@@ -146,6 +179,14 @@ function ResumeRow({ resume }: { resume: Resume }) {
 function RecentSkeleton() {
   return (
     <>
+      <div className="-mt-4 mb-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="px-5 py-4">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="mt-2.5 h-6 w-8" />
+          </div>
+        ))}
+      </div>
       <Skeleton className="mb-3 h-4 w-20" />
       <ul className="overflow-hidden rounded-xl border border-border bg-card">
         {Array.from({ length: 3 }, (_, i) => (
