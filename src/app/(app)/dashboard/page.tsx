@@ -5,26 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/app/page-header';
-import {
-  FileIcon,
-  UploadIcon,
-  ArrowRightIcon,
-  ChevronRightIcon,
-  InterviewsIcon,
-  ReportsIcon,
-} from '@/components/icons';
+import { FileIcon, ArrowRightIcon, ChevronRightIcon } from '@/components/icons';
 import { useSession } from '@/lib/auth';
 import { useResumes } from '@/lib/resumes';
 import type { ParseStatus, Resume } from '@/lib/contracts';
 
 const STATUS: Record<
   ParseStatus,
-  { label: string; tone: 'default' | 'muted' | 'success' | 'warning' | 'destructive'; action: string }
+  { label: string; tone: 'default' | 'muted' | 'success' | 'warning' | 'destructive' }
 > = {
-  pending: { label: 'Queued', tone: 'muted', action: 'Preparing…' },
-  processing: { label: 'Analyzing', tone: 'warning', action: 'Analyzing…' },
-  done: { label: 'Ready', tone: 'success', action: 'View claims' },
-  failed: { label: 'Failed', tone: 'destructive', action: 'See details' },
+  pending: { label: 'Queued', tone: 'muted' },
+  processing: { label: 'Analyzing', tone: 'warning' },
+  done: { label: 'Ready', tone: 'success' },
+  failed: { label: 'Failed', tone: 'destructive' },
 };
 
 export default function DashboardPage() {
@@ -33,45 +26,21 @@ export default function DashboardPage() {
   const items = resumes.data?.resumes ?? [];
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
-  const ready = items.filter((r) => r.parseStatus === 'done').length;
-  const inProgress = items.filter(
-    (r) => r.parseStatus === 'pending' || r.parseStatus === 'processing',
-  ).length;
-
-  const hasItems = items.length > 0;
-
   return (
     <>
-      <PageHeader
-        title={`Welcome back${firstName ? `, ${firstName}` : ''}.`}
-        description="Your interview-prep home — analyze a resume, then put its claims to the test."
-        actions={
-          hasItems ? (
-            <Link href="/new">
-              <Button>
-                <UploadIcon className="h-4 w-4" />
-                Analyze a resume
-              </Button>
-            </Link>
-          ) : undefined
-        }
-      />
+      <PageHeader title={`Welcome back${firstName ? `, ${firstName}` : ''}.`} />
 
-      {resumes.isLoading ? (
-        <ResumeGridSkeleton />
-      ) : !hasItems ? (
-        <FirstRun />
-      ) : (
-        <>
-          <div className="grid grid-cols-3 gap-3">
-            <Stat label="Resumes" value={items.length} />
-            <Stat label="Ready" value={ready} />
-            <Stat label="In progress" value={inProgress} />
-          </div>
+      <Spotlight />
 
-          <section className="mt-8">
-            <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold tracking-tight">Your resumes</h2>
+      <section className="mt-10">
+        {resumes.isLoading ? (
+          <RecentSkeleton />
+        ) : items.length === 0 ? (
+          <EmptyHint />
+        ) : (
+          <>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="text-sm font-medium text-muted-foreground">Recent</h2>
               <Link
                 href="/new"
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -79,135 +48,137 @@ export default function DashboardPage() {
                 Analyze another
               </Link>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <ul className="overflow-hidden rounded-xl border border-border bg-card">
               {items.map((r) => (
-                <ResumeCard key={r.id} resume={r} />
+                <ResumeRow key={r.id} resume={r} />
               ))}
-            </div>
-          </section>
-        </>
-      )}
+            </ul>
+          </>
+        )}
+      </section>
     </>
   );
 }
 
-/* ── Stat tile (real counts) ── */
+/* ── Spotlight ── */
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Spotlight() {
   return (
-    <div className="rounded-xl border border-border bg-card px-4 py-3.5">
-      <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{value}</div>
-    </div>
-  );
-}
+    <section className="edge-top relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(70% 130% at 88% 0%, rgba(169,211,255,0.12), transparent 60%)',
+        }}
+      />
+      <Waves />
 
-/* ── Resume card ── */
-
-function ResumeCard({ resume }: { resume: Resume }) {
-  const meta = STATUS[resume.parseStatus];
-  return (
-    <Link
-      href={`/resumes/${resume.id}`}
-      className="edge-top group flex flex-col rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40"
-    >
-      <div className="flex items-start justify-between">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-primary">
-          <FileIcon className="h-5 w-5" />
-        </span>
-        <Badge tone={meta.tone}>{meta.label}</Badge>
-      </div>
-      <p className="mt-4 truncate font-medium">{resume.fileName}</p>
-      <p className="mt-0.5 text-sm text-muted-foreground">
-        {new Date(resume.createdAt).toLocaleDateString(undefined, {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        })}
-      </p>
-      <div className="mt-4 flex items-center gap-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
-        {meta.action}
-        <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-      </div>
-    </Link>
-  );
-}
-
-function ResumeGridSkeleton() {
-  return (
-    <>
-      <div className="grid grid-cols-3 gap-3">
-        {Array.from({ length: 3 }, (_, i) => (
-          <div key={i} className="rounded-xl border border-border bg-card px-4 py-3.5">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="mt-2 h-6 w-8" />
-          </div>
-        ))}
-      </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2">
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="rounded-2xl border border-border bg-card p-5">
-            <div className="flex items-start justify-between">
-              <Skeleton className="h-10 w-10 rounded-xl" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
-            <Skeleton className="mt-4 h-4 w-40" />
-            <Skeleton className="mt-2 h-3 w-24" />
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-/* ── First run (no resumes yet) ── */
-
-const STEPS = [
-  { n: '01', icon: FileIcon, title: 'Upload resume', body: 'PDF or DOCX, plus an optional job description.' },
-  { n: '02', icon: InterviewsIcon, title: 'Live voice interview', body: 'Adaptive questions that probe your claims.' },
-  { n: '03', icon: ReportsIcon, title: 'Readiness report', body: 'Scores, a claim audit, and what to fix.' },
-];
-
-function FirstRun() {
-  return (
-    <div className="space-y-8">
-      <div className="edge-top flex flex-col items-center rounded-2xl border border-border bg-card px-6 py-12 text-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-surface text-primary">
-          <UploadIcon className="h-6 w-6" />
-        </span>
-        <h2 className="mt-5 text-xl font-semibold tracking-tight">Analyze your first resume</h2>
-        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Upload a PDF or DOCX and Intervio pulls out the claims worth defending — the starting
-          point for a live interview.
+      <div className="relative max-w-xl">
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-[28px]">
+          Go beyond the <span className="text-primary">resume</span>.
+        </h2>
+        <p className="mt-3 leading-relaxed text-muted-foreground">
+          Upload a resume and Intervio extracts the claims worth defending — then puts them to the
+          test in a live voice interview.
         </p>
-        <Link href="/new" className="mt-6">
+        <Link href="/new" className="mt-6 inline-block">
           <Button className="h-11 px-5 text-[15px]">
             Analyze a resume
             <ArrowRightIcon className="h-4 w-4" />
           </Button>
         </Link>
       </div>
+    </section>
+  );
+}
 
-      <div>
-        <p className="mb-4 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-          How it works
-        </p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {STEPS.map(({ n, icon: Icon, title, body }) => (
-            <div key={n} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-surface text-primary">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="font-mono text-sm text-muted-foreground/30">{n}</span>
-              </div>
-              <p className="mt-4 font-medium">{title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-            </div>
-          ))}
+/* Faint, on-brand equalizer — decorative (not data). */
+function Waves() {
+  const bars = [26, 40, 60, 44, 72, 52, 34, 58, 30];
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 items-center gap-1.5 opacity-40 lg:flex"
+    >
+      {bars.map((h, i) => (
+        <span
+          key={i}
+          className="eq-bar w-1 rounded-full bg-primary"
+          style={{ height: h, animationDelay: `${i * 0.12}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ── Resume row (clean list) ── */
+
+function ResumeRow({ resume }: { resume: Resume }) {
+  const meta = STATUS[resume.parseStatus];
+  return (
+    <li className="border-b border-border last:border-0">
+      <Link
+        href={`/resumes/${resume.id}`}
+        className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-muted-foreground transition-colors group-hover:text-primary">
+          <FileIcon className="h-[18px] w-[18px]" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{resume.fileName}</p>
+          <p className="text-xs text-muted-foreground">
+            {new Date(resume.createdAt).toLocaleDateString(undefined, {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </p>
         </div>
+        <Badge tone={meta.tone}>{meta.label}</Badge>
+        <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-foreground" />
+      </Link>
+    </li>
+  );
+}
+
+function RecentSkeleton() {
+  return (
+    <>
+      <Skeleton className="mb-3 h-4 w-20" />
+      <ul className="overflow-hidden rounded-xl border border-border bg-card">
+        {Array.from({ length: 3 }, (_, i) => (
+          <li key={i} className="flex items-center gap-3 border-b border-border px-4 py-3.5 last:border-0">
+            <Skeleton className="h-9 w-9 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+/* ── Empty (has spotlight above; keep this quiet) ── */
+
+function EmptyHint() {
+  const steps = ['Upload resume', 'Live interview', 'Readiness report'];
+  return (
+    <div className="rounded-xl border border-dashed border-border px-6 py-8 text-center">
+      <p className="text-sm text-muted-foreground">Your analyzed resumes will show up here.</p>
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+        {steps.map((s, i) => (
+          <span key={s} className="flex items-center gap-3">
+            {i > 0 && <span className="text-muted-foreground/40">→</span>}
+            <span>
+              <span className="font-mono text-xs text-primary">{i + 1}</span> {s}
+            </span>
+          </span>
+        ))}
       </div>
     </div>
   );

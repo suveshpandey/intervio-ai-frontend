@@ -297,8 +297,25 @@ body {
   transform-origin: top right;
   animation: pop-in 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Terminal cursor blink. */
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.blink {
+  animation: blink 1.1s step-end infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-pop {
+  .animate-pop,
+  .blink {
     animation: none;
   }
 }
