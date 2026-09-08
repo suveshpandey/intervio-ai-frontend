@@ -2,34 +2,27 @@
 
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { AppHeader } from '@/components/app-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { useRequireAuth } from '@/lib/auth';
+import { PageLoader } from '@/components/ui/page-loader';
+import { ChevronRightIcon } from '@/components/icons';
 import { useResume, useJd } from '@/lib/resumes';
 import type { Claim, ExtractedResume, ProjectItem } from '@/lib/contracts';
 
 export default function ResumeResultPage() {
-  const { user, isLoading: authLoading } = useRequireAuth();
   const params = useParams<{ id: string }>();
   const jdId = useSearchParams().get('jd');
 
   const { data, isLoading, error } = useResume(params.id);
   const jd = useJd(jdId);
 
-  if (authLoading || !user) {
-    return <main className="grid min-h-dvh place-items-center text-muted-foreground">Loading…</main>;
-  }
-
   return (
-    <div className="min-h-dvh">
-      <AppHeader />
-      <main className="mx-auto max-w-3xl px-6 py-12">
-        {isLoading && <StateNote>Loading…</StateNote>}
-        {error && <StateNote tone="error">Couldn&apos;t load this resume.</StateNote>}
+    <div className="mx-auto max-w-3xl">
+      {isLoading && <PageLoader label="Loading resume…" />}
+      {error && <StateNote tone="error">Couldn&apos;t load this resume.</StateNote>}
 
-        {data && (() => {
+      {data &&
+        (() => {
           const { resume, claims } = data;
           const status = resume.parseStatus;
 
@@ -40,8 +33,14 @@ export default function ResumeResultPage() {
           return (
             <div className="space-y-12">
               <div>
-                <p className="text-sm text-muted-foreground">{resume.fileName}</p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight">Here&apos;s what we found</h1>
+                <div className="mb-3 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                  <Link href="/dashboard" className="transition-colors hover:text-foreground">
+                    Dashboard
+                  </Link>
+                  <ChevronRightIcon className="h-3.5 w-3.5" />
+                  <span className="truncate text-foreground">{resume.fileName}</span>
+                </div>
+                <h1 className="text-2xl font-semibold tracking-tight">Here&apos;s what we found</h1>
                 {extracted?.summary && (
                   <p className="mt-3 max-w-2xl text-muted-foreground">{extracted.summary}</p>
                 )}
@@ -68,7 +67,6 @@ export default function ResumeResultPage() {
             </div>
           );
         })()}
-      </main>
     </div>
   );
 }
@@ -78,14 +76,14 @@ export default function ResumeResultPage() {
 function Analyzing({ name }: { name: string }) {
   return (
     <div className="grid min-h-[50vh] place-items-center text-center">
-      <div className="space-y-4">
-        <Spinner className="mx-auto h-6 w-6 text-primary" />
+      <div className="flex flex-col items-center gap-5">
         <div>
           <p className="font-medium">Analyzing {name}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Reading your resume and extracting claims — this takes a few seconds.
           </p>
         </div>
+        <span className="dash-line" aria-hidden />
       </div>
     </div>
   );

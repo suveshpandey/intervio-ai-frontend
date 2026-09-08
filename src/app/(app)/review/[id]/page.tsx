@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
-import { AppHeader } from '@/components/app-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
 import { BlueprintPreview } from '@/components/blueprint-preview';
-import { useRequireAuth } from '@/lib/auth';
+import { PageHeader } from '@/components/app/page-header';
+import { ChevronRightIcon } from '@/components/icons';
 import { useResume } from '@/lib/resumes';
 import { useCreateBlueprint } from '@/lib/blueprints';
 import { ApiError } from '@/lib/api';
@@ -19,7 +18,6 @@ const LEVELS: Level[] = ['junior', 'mid', 'senior'];
 const DIFFICULTIES: Difficulty[] = ['easy', 'standard', 'hard'];
 
 export default function ReviewPage() {
-  const { user, isLoading: authLoading } = useRequireAuth();
   const resumeId = useParams<{ id: string }>().id;
   const jdId = useSearchParams().get('jd') ?? undefined;
 
@@ -34,10 +32,6 @@ export default function ReviewPage() {
   const [level, setLevel] = useState<Level>('mid');
   const [difficulty, setDifficulty] = useState<Difficulty>('standard');
   const [durationMin, setDurationMin] = useState(15);
-
-  if (authLoading || !user) {
-    return <main className="grid min-h-dvh place-items-center text-muted-foreground">Loading…</main>;
-  }
 
   async function onGenerate() {
     setError(null);
@@ -57,30 +51,44 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-dvh">
-      <AppHeader />
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        {result ? (
-          <>
-            <BlueprintPreview data={result} />
-            <div className="mt-10 flex items-center gap-3 border-t border-border pt-8">
-              <Button disabled title="The live voice interview arrives in the next phase">
-                Start interview
-              </Button>
-              <span className="text-sm text-muted-foreground">Voice interview — coming next phase</span>
-              <Link href={`/resumes/${result.blueprint.resumeId}`} className="ml-auto">
-                <Button variant="ghost">Back to resume</Button>
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-semibold tracking-tight">Set up the interview</h1>
-            <p className="mt-2 text-muted-foreground">
-              We&apos;ve pre-filled sensible defaults from your resume. Tweak anything, then generate the plan.
-            </p>
+    <div className="mx-auto max-w-2xl">
+      {result ? (
+        <>
+          <BlueprintPreview data={result} />
+          <div className="mt-10 flex items-center gap-3 border-t border-border pt-8">
+            <Button disabled title="The live voice interview arrives in the next phase">
+              Start interview
+            </Button>
+            <span className="text-sm text-muted-foreground">Voice interview — coming next phase</span>
+            <Link href={`/resumes/${result.blueprint.resumeId}`} className="ml-auto">
+              <Button variant="ghost">Back to resume</Button>
+            </Link>
+          </div>
+        </>
+      ) : (
+        <>
+          <PageHeader
+            breadcrumb={
+              <>
+                <Link href="/dashboard" className="transition-colors hover:text-foreground">
+                  Dashboard
+                </Link>
+                <ChevronRightIcon className="h-3.5 w-3.5" />
+                <Link
+                  href={`/resumes/${resumeId}`}
+                  className="transition-colors hover:text-foreground"
+                >
+                  Resume
+                </Link>
+                <ChevronRightIcon className="h-3.5 w-3.5" />
+                <span className="text-foreground">Set up</span>
+              </>
+            }
+            title="Set up the interview"
+            description="We've pre-filled sensible defaults from your resume. Tweak anything, then generate the plan."
+          />
 
-            <div className="mt-8 space-y-5">
+          <div className="space-y-5">
               <Field label="Target role">
                 <Input
                   value={role}
@@ -122,18 +130,11 @@ export default function ReviewPage() {
 
             {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
 
-            <Button onClick={onGenerate} disabled={create.isPending} className="mt-8 w-full sm:w-auto">
-              {create.isPending ? (
-                <>
-                  <Spinner /> Building your plan…
-                </>
-              ) : (
-                'Generate interview plan'
-              )}
-            </Button>
-          </>
-        )}
-      </main>
+          <Button onClick={onGenerate} loading={create.isPending} className="mt-8 w-full sm:w-auto">
+            {create.isPending ? 'Building your plan…' : 'Generate interview plan'}
+          </Button>
+        </>
+      )}
     </div>
   );
 }

@@ -23,9 +23,10 @@ export function Button({
       className={cn(
         'relative inline-flex h-10 items-center justify-center gap-2 overflow-hidden rounded-[var(--radius)] px-4 text-sm font-medium',
         'transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        'disabled:pointer-events-none disabled:opacity-50',
-        // while loading the button stays fully opaque so the sweep reads clearly
-        loading && 'disabled:opacity-100',
+        'disabled:pointer-events-none',
+        // dim only for a real disabled state — while loading the button stays lit
+        // so the sweep is clearly visible
+        loading ? 'cursor-progress' : 'disabled:opacity-50',
         variants[variant],
         className,
       )}
@@ -34,15 +35,10 @@ export function Button({
       {loading && (
         <span
           aria-hidden
-          className={cn(
-            'pointer-events-none absolute inset-0 btn-sweep',
-            variant !== 'primary' && 'btn-sweep-accent',
-          )}
+          className={cn('btn-sweep', variant !== 'primary' && 'btn-sweep-accent')}
         />
       )}
-      <span className={cn('relative inline-flex items-center gap-2', loading && 'opacity-80')}>
-        {children}
-      </span>
+      <span className="relative z-[1] inline-flex items-center gap-2">{children}</span>
     </button>
   );
 }

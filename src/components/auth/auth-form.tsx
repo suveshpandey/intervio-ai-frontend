@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MailIcon, UserIcon, LockIcon, EyeIcon, EyeOffIcon } from '@/components/icons';
 import { useLogin, useSignup, googleLoginUrl } from '@/lib/auth';
 import { ApiError } from '@/lib/api';
 
@@ -40,6 +41,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
 
   const isSignup = mode === 'signup';
   const pending = login.isPending || signup.isPending;
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -84,17 +86,41 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
       </div>
 
       <form onSubmit={onSubmit} className="space-y-3">
-        <Input name="email" type="email" placeholder="you@email.com" autoComplete="email" required />
+        <Input
+          name="email"
+          type="email"
+          placeholder="you@email.com"
+          autoComplete="email"
+          required
+          icon={<MailIcon />}
+        />
         {isSignup && (
-          <Input name="name" type="text" placeholder="Username (optional)" autoComplete="name" />
+          <Input
+            name="name"
+            type="text"
+            placeholder="Username (optional)"
+            autoComplete="name"
+            icon={<UserIcon />}
+          />
         )}
         <Input
           name="password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           placeholder="Password"
           autoComplete={isSignup ? 'new-password' : 'current-password'}
           minLength={8}
           required
+          icon={<LockIcon />}
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+            </button>
+          }
         />
 
         {error && <p className="text-sm text-destructive">{error}</p>}

@@ -75,6 +75,38 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---- Global scrollbar (themed, slim, premium) ---- */
+:root {
+  --scrollbar-thumb: rgba(169, 211, 255, 0.14);
+  --scrollbar-thumb-hover: rgba(169, 211, 255, 0.3);
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+/* WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 3px solid transparent; /* inset the thumb → reads as a slim pill */
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* Staggered entrance for the blueprint journey (nodes rise + fade in). */
 @keyframes rise {
   from {
@@ -174,34 +206,30 @@ body {
 
 /* ---- Loading language ---- */
 
-/* Button sweep: a soft light band glides left → right while pending. */
+/* Button sweep: a bright, soft band glides left → right while pending. The
+   band is ~45% of the button wide and travels fully across, clipped by the
+   button's overflow-hidden. */
 @keyframes btn-sweep {
   from {
-    transform: translateX(-100%);
+    transform: translateX(-140%);
   }
   to {
-    transform: translateX(100%);
+    transform: translateX(320%);
   }
 }
 .btn-sweep {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.45) 45%,
-    rgba(255, 255, 255, 0.55) 55%,
-    transparent 100%
-  );
-  animation: btn-sweep 1.15s ease-in-out infinite;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  filter: blur(1px);
+  animation: btn-sweep 1.05s linear infinite;
 }
-/* On light-blue (primary) buttons a white sweep reads as a glow; on dark
-   (outline) buttons the accent tint is more visible. */
+/* On dark (outline / ghost) buttons the accent tint reads better than white. */
 .btn-sweep-accent {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(169, 211, 255, 0.35) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent, rgba(169, 211, 255, 0.65), transparent);
 }
 
 /* Page loader: a dashed rule whose dashes march left → right, edges faded. */
@@ -215,7 +243,7 @@ body {
   width: 180px;
   background-image: repeating-linear-gradient(
     90deg,
-    var(--primary) 0 11px,
+    rgba(169, 211, 255, 0.38) 0 11px,
     transparent 11px 22px
   );
   background-size: 22px 100%;
