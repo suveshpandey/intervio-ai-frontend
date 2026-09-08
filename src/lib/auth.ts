@@ -62,6 +62,23 @@ export function useLogout() {
   });
 }
 
+/** Update editable profile fields (currently: name). Refreshes the cached session. */
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { name: string }) => api.patch<MeResponse>('/auth/me', input),
+    onSuccess: ({ user }) => qc.setQueryData(['session'], user),
+  });
+}
+
+/** Change password for email/password accounts (verifies the current password). */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (input: { currentPassword: string; newPassword: string }) =>
+      api.post('/auth/change-password', input),
+  });
+}
+
 /** Full-page redirect to the backend's Google OAuth entry point. */
 export function googleLoginUrl() {
   return `${API_URL_PUBLIC}/auth/google`;

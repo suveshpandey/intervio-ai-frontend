@@ -281,3 +281,24 @@ body {
     animation: none;
   }
 }
+
+/* Popover / menu entrance — subtle scale + fade from the top-right anchor. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-pop {
+  transform-origin: top right;
+  animation: pop-in 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop {
+    animation: none;
+  }
+}

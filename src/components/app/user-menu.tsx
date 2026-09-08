@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession, useLogout } from '@/lib/auth';
-import { LogoutIcon } from '@/components/icons';
+import { LogoutIcon, UserIcon } from '@/components/icons';
 
 function initialsFrom(name: string | null | undefined, email: string): string {
   if (name && name.trim()) {
@@ -11,6 +12,11 @@ function initialsFrom(name: string | null | undefined, email: string): string {
     return (parts[0][0] + (parts[1]?.[0] ?? '')).toUpperCase();
   }
   return email.slice(0, 2).toUpperCase();
+}
+
+function firstNameFrom(name: string | null | undefined, email: string): string {
+  if (name && name.trim()) return name.trim().split(/\s+/)[0];
+  return email.split('@')[0];
 }
 
 export function UserMenu() {
@@ -22,6 +28,7 @@ export function UserMenu() {
   if (!user) return null;
 
   const initials = initialsFrom(user.name, user.email);
+  const firstName = firstNameFrom(user.name, user.email);
 
   async function onLogout() {
     await logout.mutateAsync();
@@ -30,15 +37,19 @@ export function UserMenu() {
 
   return (
     <div className="relative">
+      {/* Capsule trigger: avatar + first name */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-xs font-semibold tracking-wide text-foreground transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-9 items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {initials}
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-[11px] font-semibold tracking-wide text-primary">
+          {initials}
+        </span>
+        <span className="max-w-[8rem] truncate text-sm font-medium">{firstName}</span>
       </button>
 
       {open && (
@@ -51,13 +62,27 @@ export function UserMenu() {
           />
           <div
             role="menu"
-            className="edge-top absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-2xl shadow-black/50"
+            className="edge-top animate-pop absolute right-1 top-full z-50 mt-7 w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-2xl shadow-black/50"
           >
-            <div className="px-2.5 py-2">
-              <p className="truncate text-sm font-medium">{user.name || 'Signed in'}</p>
-              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <div className="flex items-center gap-2.5 px-2 py-2">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{user.name || firstName}</p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+              </div>
             </div>
             <div className="my-1 h-px bg-border" />
+            <Link
+              href="/account"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <UserIcon className="h-4 w-4" />
+              Account
+            </Link>
             <button
               type="button"
               role="menuitem"

@@ -5,8 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRequireAuth } from '@/lib/auth';
 import { PageLoader } from '@/components/ui/page-loader';
-import { Button } from '@/components/ui/button';
-import { PlusIcon, MenuIcon } from '@/components/icons';
+import { MenuIcon } from '@/components/icons';
 import { Sidebar } from '@/components/app/sidebar';
 import { UserMenu } from '@/components/app/user-menu';
 import { Container } from '@/components/app/container';
@@ -60,27 +59,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
-            <Link href="/new">
-              <Button className="h-9 px-3.5">
-                <PlusIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">New interview</span>
-                <span className="sm:hidden">New</span>
-              </Button>
-            </Link>
             <UserMenu />
           </div>
         </header>
 
-        <main className="relative flex-1">
-          {/* Balanced ambient: one faint top glow, nothing busy behind content. */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-64"
-            style={{
-              background:
-                'radial-gradient(50% 100% at 50% 0%, rgba(169,211,255,0.06), transparent 70%)',
-            }}
-          />
+        <main className="flex-1">
           <Container>{children}</Container>
         </main>
       </div>
