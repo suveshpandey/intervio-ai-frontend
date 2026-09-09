@@ -79,6 +79,21 @@ export function useChangePassword() {
   });
 }
 
+/** Request a password-reset link. Always resolves (server never reveals if the email exists). */
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: (email: string) => api.post('/auth/forgot-password', { email }),
+  });
+}
+
+/** Complete a password reset with the emailed token. */
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (input: { token: string; newPassword: string }) =>
+      api.post('/auth/reset-password', input),
+  });
+}
+
 /** Full-page redirect to the backend's Google OAuth entry point. */
 export function googleLoginUrl() {
   return `${API_URL_PUBLIC}/auth/google`;

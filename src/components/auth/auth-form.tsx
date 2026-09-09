@@ -123,6 +123,17 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
           }
         />
 
+        {!isSignup && (
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        )}
+
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" className="w-full" loading={pending}>
