@@ -27,6 +27,9 @@ export function Button({
         // dim only for a real disabled state — while loading the button stays lit
         // so the sweep is clearly visible
         loading ? 'cursor-progress' : 'disabled:opacity-50',
+        // left→right shine on hover (auto on every button); suppressed while the
+        // loading sweep is running so the two effects never overlap
+        !loading && 'hover-sweep',
         variants[variant],
         className,
       )}
