@@ -82,6 +82,32 @@ button:not(:disabled),
   cursor: pointer;
 }
 
+/* Nav link: an accent underline that grows left → right on hover. */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 1.5px;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-link::after {
+    transition: none;
+  }
+}
+
 /* ---- Global scrollbar (themed, slim, premium) ---- */
 :root {
   --scrollbar-thumb: rgba(169, 211, 255, 0.14);

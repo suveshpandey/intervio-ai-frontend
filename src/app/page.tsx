@@ -342,17 +342,19 @@ export default function LandingPage() {
       {/* nav */}
       <header className="sticky top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-xl">
         <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Brand />
-          <div className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-            <a href="#how" className="transition-colors hover:text-foreground">
-              How it works
-            </a>
-            <a href="#why" className="transition-colors hover:text-foreground">
-              Why it&apos;s different
-            </a>
-            <a href="#features" className="transition-colors hover:text-foreground">
-              Features
-            </a>
+          <div className="flex items-center gap-9">
+            <Brand />
+            <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+              <a href="#how" className="nav-link transition-colors hover:text-foreground">
+                How it works
+              </a>
+              <a href="#why" className="nav-link transition-colors hover:text-foreground">
+                Why it&apos;s different
+              </a>
+              <a href="#features" className="nav-link transition-colors hover:text-foreground">
+                Features
+              </a>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login">

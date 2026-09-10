@@ -79,6 +79,15 @@ export function useChangePassword() {
   });
 }
 
+/** Permanently delete the current account (password required for email accounts). */
+export function useDeleteAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { password?: string }) => api.del('/auth/me', input),
+    onSuccess: () => qc.setQueryData(['session'], null),
+  });
+}
+
 /** Request a password-reset link. Always resolves (server never reveals if the email exists). */
 export function useForgotPassword() {
   return useMutation({
