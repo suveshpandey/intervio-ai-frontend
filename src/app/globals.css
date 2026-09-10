@@ -75,6 +75,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Hand cursor on every interactive control (buttons + role="button"), except
+   disabled ones. Covers all pages without touching each component. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
 /* ---- Global scrollbar (themed, slim, premium) ---- */
 :root {
   --scrollbar-thumb: rgba(169, 211, 255, 0.14);
@@ -317,5 +324,33 @@ body {
   .animate-pop,
   .blink {
     animation: none;
+  }
+}
+
+/* Hover shine: a light band glides left → right across the element on hover.
+   Reads as a glow on the light-blue primary button. Requires a positioned,
+   overflow-hidden host (the Button already is). */
+.hover-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hover-sweep:hover::after {
+  transform: translateX(100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hover-sweep::after {
+    transition: none;
+    display: none;
   }
 }

@@ -19,9 +19,10 @@ export function useCreateBlueprint() {
   });
 }
 
-export function useBlueprint(id: string) {
+export function useBlueprint(id: string | undefined) {
   return useQuery({
     queryKey: ['blueprint', id],
     queryFn: () => api.get<BlueprintWithClaims>(`/blueprints/${id}`),
+    enabled: Boolean(id),
   });
 }

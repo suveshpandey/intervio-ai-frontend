@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/app/page-header';
 import { ChevronRightIcon } from '@/components/icons';
 import { useResume } from '@/lib/resumes';
 import { useCreateBlueprint } from '@/lib/blueprints';
+import { useStartInterview } from '@/lib/interviews';
 import { ApiError } from '@/lib/api';
 import type { BlueprintWithClaims, Difficulty, Level } from '@/lib/contracts';
 
@@ -22,7 +23,9 @@ export default function ReviewPage() {
   const jdId = useSearchParams().get('jd') ?? undefined;
 
   const resume = useResume(resumeId);
+  const router = useRouter();
   const create = useCreateBlueprint();
+  const startInterview = useStartInterview();
   const [result, setResult] = useState<BlueprintWithClaims | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,10 +59,23 @@ export default function ReviewPage() {
         <>
           <BlueprintPreview data={result} />
           <div className="mt-10 flex items-center gap-3 border-t border-border pt-8">
-            <Button disabled title="The live voice interview arrives in the next phase">
-              Start interview
+            <Button
+              onClick={async () => {
+                setError(null);
+                try {
+                  const res = await startInterview.mutateAsync(result.blueprint.id);
+                  router.push(`/interview/${res.interviewId}`);
+                } catch (err) {
+                  setError(
+                    err instanceof ApiError ? err.message : 'Could not start the interview.',
+                  );
+                }
+              }}
+              disabled={startInterview.isPending}
+            >
+              {startInterview.isPending ? 'Starting…' : 'Start interview'}
             </Button>
-            <span className="text-sm text-muted-foreground">Voice interview — coming next phase</span>
+            <span className="text-sm text-muted-foreground">Typed for now — voice in Phase 4</span>
             <Link href={`/resumes/${result.blueprint.resumeId}`} className="ml-auto">
               <Button variant="ghost">Back to resume</Button>
             </Link>

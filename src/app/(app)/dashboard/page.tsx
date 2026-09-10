@@ -117,7 +117,7 @@ function Spotlight() {
           test in a live voice interview.
         </p>
         <Link href="/new" className="mt-6 inline-block">
-          <Button className="h-11 px-5 text-[15px]">
+          <Button className="hover-sweep h-11 px-5 text-[15px]">
             Analyze a resume
             <ArrowRightIcon className="h-4 w-4" />
           </Button>

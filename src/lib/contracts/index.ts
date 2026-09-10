@@ -100,3 +100,50 @@ export interface BlueprintWithClaims {
   blueprint: Blueprint;
   probedClaims: Claim[];
 }
+// ── Phase 3: Live interview ──
+export type InterviewStatus = 'planned' | 'live' | 'completed' | 'abandoned';
+
+export interface EvalSnapshot {
+  answerQuality: number;
+  technicalDepth: number;
+  claimEvidence: 'support' | 'partial' | 'none' | 'weaken';
+  issue: 'generic' | 'memorized' | 'no_answer' | 'off_topic' | 'none';
+  actionSuggested: string;
+  reason: string;
+}
+
+/** Returned on every turn. `debug` mirrors the engine's reasoning. */
+export interface TurnResult {
+  interviewId: string;
+  turnIdx: number;
+  question: string | null;
+  done: boolean;
+  sectionKey: string;
+  debug?: {
+    action: string;
+    overrode: boolean;
+    rationale: string;
+    evaluation: EvalSnapshot;
+    difficulty: Difficulty;
+  };
+}
+
+export interface TranscriptTurn {
+  idx: number;
+  sectionKey: string;
+  objective: string;
+  question: string;
+  answer: string | null;
+  chosenAction: string | null;
+}
+
+export interface InterviewTranscript {
+  interview: {
+    id: string;
+    status: InterviewStatus;
+    startedAt: string | null;
+    endedAt: string | null;
+    blueprintId: string;
+  };
+  turns: TranscriptTurn[];
+}
