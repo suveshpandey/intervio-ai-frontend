@@ -162,7 +162,7 @@ function BandDot({ tone }: { tone: 'success' | 'warning' | 'destructive' }) {
 function InterviewMock() {
   return (
     <div className="relative">
-      <div className="edge-top overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50">
+      <div className="edge-top shadow-pop overflow-hidden rounded-2xl border border-border bg-card">
         {/* window bar */}
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ function InterviewMock() {
       </div>
 
       {/* floating readiness chip */}
-      <div className="animate-float absolute -bottom-6 -left-4 hidden rounded-xl border border-border bg-surface px-4 py-3 shadow-xl shadow-black/50 sm:block">
+      <div className="animate-float shadow-float absolute -bottom-6 -left-4 hidden rounded-xl border border-border bg-surface px-4 py-3 sm:block">
         <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
           Readiness
         </div>

@@ -296,7 +296,7 @@ function DeleteAccountModal({
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
-      <div className="animate-pop relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-black/50">
+      <div className="animate-pop shadow-pop relative w-full max-w-md rounded-2xl border border-border bg-card p-6">
         <h2 className="text-lg font-semibold tracking-tight">Delete your account?</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           This permanently deletes your account and everything in it — resumes, plans, and

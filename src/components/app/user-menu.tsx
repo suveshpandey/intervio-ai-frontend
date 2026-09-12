@@ -103,7 +103,7 @@ export function UserMenu() {
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: coords.top, right: coords.right }}
-            className="edge-top animate-pop z-[100] w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5 shadow-2xl shadow-black/50"
+            className="edge-top animate-pop shadow-pop z-[100] w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5"
           >
             <div className="flex items-center gap-2.5 px-2 py-2">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
