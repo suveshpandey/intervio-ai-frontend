@@ -29,17 +29,23 @@
 }
 
 [data-theme='light'] {
-  --background: #fbfbfb;
-  --foreground: #18181b;
+  /* Cool white with a faint blue cast; deep-navy ink. Same family as dark. */
+  --background: #eef3fa;
+  --foreground: #0a1f33;
   --card: #ffffff;
-  --card-foreground: #18181b;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --primary: #6366f1;
+  --card-foreground: #0a1f33;
+  --surface: #e5edf7; /* elevation above the card ground */
+  --border: #d3e0ee;
+  --input: #d3e0ee;
+  --muted: #e7eef7;
+  --muted-foreground: #566a82;
+  --primary: #103a63; /* deep navy-blue, echoing the dark-mode canvas */
   --primary-foreground: #ffffff;
-  --ring: #6366f1;
+  --ring: #103a63;
+
+  --success: #12a150;
+  --warning: #c67a08;
+  --destructive: #d5473f;
 }
 
 /* Expose tokens as Tailwind utilities: bg-background, text-foreground, border-border, … */
@@ -113,6 +119,10 @@ button:not(:disabled),
   --scrollbar-thumb: rgba(169, 211, 255, 0.14);
   --scrollbar-thumb-hover: rgba(169, 211, 255, 0.3);
 }
+[data-theme='light'] {
+  --scrollbar-thumb: rgba(10, 31, 51, 0.18);
+  --scrollbar-thumb-hover: rgba(10, 31, 51, 0.34);
+}
 /* Firefox */
 * {
   scrollbar-width: thin;
@@ -169,6 +179,9 @@ button:not(:disabled),
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+[data-theme='light'] .text-gradient {
+  background-image: linear-gradient(180deg, #0a1f33 0%, #566a82 100%);
 }
 
 /* Faint blueprint grid, blue-tinted, masked so it dissolves toward the edges. */
@@ -276,7 +289,7 @@ button:not(:disabled),
   width: 180px;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(169, 211, 255, 0.38) 0 11px,
+    color-mix(in srgb, var(--primary) 55%, transparent) 0 11px,
     transparent 11px 22px
   );
   background-size: 22px 100%;

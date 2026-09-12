@@ -8,6 +8,7 @@ import { PageLoader } from '@/components/ui/page-loader';
 import { MenuIcon } from '@/components/icons';
 import { Sidebar } from '@/components/app/sidebar';
 import { UserMenu } from '@/components/app/user-menu';
+import { ThemeToggle } from '@/components/app/theme-toggle';
 import { Container } from '@/components/app/container';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <UserMenu />
           </div>
         </header>
