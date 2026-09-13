@@ -33,7 +33,17 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title={`Welcome back${firstName ? `, ${firstName}` : ''}.`} />
+      <PageHeader
+        title={
+          firstName ? (
+            <>
+              Welcome back, <span className="text-primary">{firstName}</span>.
+            </>
+          ) : (
+            'Welcome back.'
+          )
+        }
+      />
 
       <Spotlight />
 
