@@ -11,6 +11,8 @@ import { PageHeader } from '@/components/app/page-header';
 import { ChevronRightIcon } from '@/components/icons';
 import { useResume } from '@/lib/resumes';
 import { useCreateBlueprint } from '@/lib/blueprints';
+import { useVoices } from '@/lib/voices';
+import { VoicePicker } from '@/components/voice-picker';
 import { useStartInterview } from '@/lib/interviews';
 import { ApiError } from '@/lib/api';
 import type { BlueprintWithClaims, Difficulty, Level } from '@/lib/contracts';
@@ -26,6 +28,7 @@ export default function ReviewPage() {
   const router = useRouter();
   const create = useCreateBlueprint();
   const startInterview = useStartInterview();
+  const voices = useVoices();
   const [result, setResult] = useState<BlueprintWithClaims | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +38,7 @@ export default function ReviewPage() {
   const [level, setLevel] = useState<Level>('mid');
   const [difficulty, setDifficulty] = useState<Difficulty>('standard');
   const [durationMin, setDurationMin] = useState(15);
+  const [voice, setVoice] = useState<string>('');
 
   async function onGenerate() {
     setError(null);
@@ -46,6 +50,7 @@ export default function ReviewPage() {
         level,
         difficulty,
         durationMin,
+        voice: voice || voices.data?.defaultVoice,
       });
       setResult(res);
     } catch (err) {
@@ -75,7 +80,7 @@ export default function ReviewPage() {
             >
               {startInterview.isPending ? 'Starting…' : 'Start interview'}
             </Button>
-            <span className="text-sm text-muted-foreground">Typed for now — voice in Phase 4</span>
+            <span className="text-sm text-muted-foreground">The interviewer speaks — turn your sound on</span>
             <Link href={`/resumes/${result.blueprint.resumeId}`} className="ml-auto">
               <Button variant="ghost">Back to resume</Button>
             </Link>
@@ -142,6 +147,18 @@ export default function ReviewPage() {
                   </Select>
                 </Field>
               </div>
+
+              <Field label="Interviewer voice">
+                {voices.data ? (
+                  <VoicePicker
+                    voices={voices.data.voices}
+                    value={voice || voices.data.defaultVoice}
+                    onChange={setVoice}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">Loading voices…</p>
+                )}
+              </Field>
             </div>
 
             {error && <p className="mt-4 text-sm text-destructive">{error}</p>}

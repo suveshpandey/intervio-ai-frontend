@@ -147,3 +147,13 @@ export interface InterviewTranscript {
   };
   turns: TranscriptTurn[];
 }
+
+// ── Interviewer voice ──
+export interface VoiceOption {
+  id: string;
+  name: string;
+  accent: string;
+  description: string;
+  /** Deepgram-hosted demo clip for the preview button. */
+  sampleUrl: string;
+}

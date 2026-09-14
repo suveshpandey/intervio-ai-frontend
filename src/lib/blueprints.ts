@@ -11,6 +11,7 @@ export interface BlueprintConfig {
   level: Level;
   difficulty: Difficulty;
   durationMin: number;
+  voice?: string;
 }
 
 export function useCreateBlueprint() {
