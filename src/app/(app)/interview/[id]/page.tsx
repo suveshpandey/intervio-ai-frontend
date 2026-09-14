@@ -10,6 +10,7 @@ import { PageLoader } from '@/components/ui/page-loader';
 import { useTranscript } from '@/lib/interviews';
 import { useBlueprint } from '@/lib/blueprints';
 import { PcmPlayer } from '@/lib/audio-player';
+import { MicRecorder } from '@/lib/audio-recorder';
 import { connectVoice, type ServerMessage, type VoiceConnection } from '@/lib/voice-socket';
 import { cn } from '@/lib/utils';
 import type { PlanSection } from '@/lib/contracts';
@@ -40,9 +41,15 @@ export default function InterviewPage() {
   const [done, setDone] = useState(false);
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [interim, setInterim] = useState('');
+  const [micLevel, setMicLevel] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
+  const [micState, setMicState] = useState<'starting' | 'ready' | 'failed'>('starting');
 
   const conn = useRef<VoiceConnection | null>(null);
   const player = useRef<PcmPlayer | null>(null);
+  const mic = useRef<MicRecorder | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const hydrated = useRef(false);
 
@@ -66,6 +73,7 @@ export default function InterviewPage() {
   // Tear down audio + socket when leaving the page.
   useEffect(
     () => () => {
+      mic.current?.stop();
       conn.current?.close();
       player.current?.close();
     },
@@ -74,9 +82,14 @@ export default function InterviewPage() {
 
   const onMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
+      case 'transcript':
+        // Interim text is the live caption; finals are folded in by the gateway.
+        setInterim(msg.isFinal ? '' : msg.text);
+        break;
       case 'question':
         setThinking(false);
         setSpeaking(true);
+        setInterim('');
         setQuestion(msg.text);
         setSectionKey(msg.sectionKey);
         break;
@@ -114,12 +127,29 @@ export default function InterviewPage() {
       await p.unlock();
       player.current = p;
 
-      conn.current = await connectVoice(interviewId, {
+      const c = await connectVoice(interviewId, {
         onMessage,
         onAudio: (chunk) => p.enqueue(chunk),
         onClose: () => setConnected(false),
       });
+      conn.current = c;
       setConnected(true);
+
+      // Mic failing is not fatal — the typed fallback still works, so we surface
+      // the reason and carry on rather than killing the interview.
+      try {
+        const m = new MicRecorder({
+          onFrame: (pcm) => c.sendAudio(pcm),
+          onLevel: setMicLevel,
+        });
+        await m.start();
+        mic.current = m;
+        setMicState('ready');
+      } catch (err) {
+        setMicState('failed');
+        setShowTyping(true);
+        setError(err instanceof Error ? err.message : 'Microphone unavailable.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not start the interview audio.');
     } finally {
@@ -135,6 +165,14 @@ export default function InterviewPage() {
     setDraft('');
     conn.current.sendText(answer);
   }
+
+  // Half-duplex: the mic is closed while the interviewer speaks, so it can
+  // never hear its own voice, and reopens the moment it finishes.
+  useEffect(() => {
+    if (micState !== 'ready' || !mic.current) return;
+    if (speaking || thinking || muted) mic.current.mute();
+    else mic.current.unmute();
+  }, [speaking, thinking, muted, micState]);
 
   if (transcript.isLoading) return <PageLoader label="Loading your interview…" />;
   if (transcript.error) return <p className="text-sm text-destructive">Couldn&apos;t load this interview.</p>;
@@ -234,30 +272,108 @@ export default function InterviewPage() {
             </div>
           ) : (
             <>
-              <div className="flex items-end gap-2">
-                <Textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
-                  }}
-                  placeholder={busy ? 'Listen to the question…' : 'Type your answer…'}
-                  rows={3}
-                  disabled={busy}
-                  className="min-h-[4.5rem]"
-                />
-                <Button onClick={send} disabled={busy || !draft.trim()}>
-                  Send
-                </Button>
+              {/* Primary path: speak. The mic closes while the interviewer talks. */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMuted((m) => !m)}
+                  disabled={micState !== 'ready'}
+                  aria-label={muted ? 'Unmute microphone' : 'Mute microphone'}
+                  className={cn(
+                    'grid h-11 w-11 shrink-0 place-items-center rounded-full border transition-colors',
+                    'disabled:opacity-40',
+                    muted
+                      ? 'border-destructive/40 bg-destructive/10 text-destructive'
+                      : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                  )}
+                >
+                  <MicIcon muted={muted} />
+                </button>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <MicLevel level={busy || muted ? 0 : micLevel} active={micState === 'ready' && !busy && !muted} />
+                    <span className="text-xs text-muted-foreground">
+                      {speaking
+                        ? 'Interviewer speaking…'
+                        : thinking
+                          ? 'Thinking…'
+                          : muted
+                            ? 'Muted'
+                            : micState === 'ready'
+                              ? 'Listening — just talk'
+                              : micState === 'starting'
+                                ? 'Starting microphone…'
+                                : 'Mic unavailable — type below'}
+                    </span>
+                  </div>
+                  <p className="mt-1 truncate text-sm text-foreground/80">
+                    {interim || <span className="text-muted-foreground/40">…</span>}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowTyping((v) => !v)}
+                  className="shrink-0 font-mono text-[11px] text-muted-foreground/60 underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  {showTyping ? 'hide typing' : 'type instead'}
+                </button>
               </div>
-              <p className="mt-2 font-mono text-[11px] text-muted-foreground/60">
-                ⌘/Ctrl + Enter to send · speaking into the mic arrives next
-              </p>
+
+              {/* Fallback: typing still works (and is how we test without a mic). */}
+              {showTyping && (
+                <div className="mt-3 flex items-end gap-2">
+                  <Textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send();
+                    }}
+                    placeholder={busy ? 'Listen to the question…' : 'Type your answer…'}
+                    rows={2}
+                    disabled={busy}
+                  />
+                  <Button onClick={send} disabled={busy || !draft.trim()}>
+                    Send
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+/** Mic level meter — five bars that light up with your voice. */
+function MicLevel({ level, active }: { level: number; active: boolean }) {
+  // RMS for speech sits low, so scale it into something visible.
+  const lit = active ? Math.min(5, Math.round(level * 60)) : 0;
+  return (
+    <span className="flex items-end gap-[2px]" aria-hidden>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span
+          key={i}
+          className={cn(
+            'w-[3px] rounded-full transition-all duration-100',
+            i < lit ? 'bg-primary' : 'bg-border',
+          )}
+          style={{ height: `${6 + i * 2}px` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function MicIcon({ muted }: { muted: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+      {muted && <path d="M3 3l18 18" />}
+    </svg>
   );
 }
 
