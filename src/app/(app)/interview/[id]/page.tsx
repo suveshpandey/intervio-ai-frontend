@@ -18,6 +18,18 @@ import type { PlanSection } from '@/lib/contracts';
 /** The gateway streams the interviewer's voice as PCM16 at this rate. */
 const TTS_SAMPLE_RATE = 24_000;
 
+/**
+ * Keep the mic closed briefly after the interviewer's audio ends, so the tail of
+ * its voice through the speakers isn't picked up as the candidate's answer.
+ */
+const ECHO_TAIL_MS = 150;
+/**
+ * Safety net: if the player never reports it drained (e.g. the audio context was
+ * suspended), still reopen the mic this long after the expected end of playback.
+ * A mic stuck closed would look exactly like the interview hanging.
+ */
+const RELEASE_FALLBACK_MS = 1500;
+
 interface Exchange {
   question: string;
   answer: string | null;
@@ -50,6 +62,9 @@ export default function InterviewPage() {
   const conn = useRef<VoiceConnection | null>(null);
   const player = useRef<PcmPlayer | null>(null);
   const mic = useRef<MicRecorder | null>(null);
+  /** Server finished sending this question's audio. */
+  const speechEnded = useRef(false);
+  const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const hydrated = useRef(false);
 
@@ -73,12 +88,29 @@ export default function InterviewPage() {
   // Tear down audio + socket when leaving the page.
   useEffect(
     () => () => {
+      if (releaseTimer.current) clearTimeout(releaseTimer.current);
       mic.current?.stop();
       conn.current?.close();
       player.current?.close();
     },
     [],
   );
+
+  const clearRelease = useCallback(() => {
+    if (releaseTimer.current) {
+      clearTimeout(releaseTimer.current);
+      releaseTimer.current = null;
+    }
+  }, []);
+
+  /** Hand the floor back to the candidate (after a short echo tail). */
+  const releaseMic = useCallback(() => {
+    clearRelease();
+    releaseTimer.current = setTimeout(() => {
+      releaseTimer.current = null;
+      setSpeaking(false);
+    }, ECHO_TAIL_MS);
+  }, [clearRelease]);
 
   const onMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
@@ -87,6 +119,8 @@ export default function InterviewPage() {
         setInterim(msg.isFinal ? '' : msg.text);
         break;
       case 'question':
+        clearRelease();
+        speechEnded.current = false;
         setThinking(false);
         setSpeaking(true);
         setInterim('');
@@ -100,10 +134,28 @@ export default function InterviewPage() {
       case 'thinking':
         setThinking(true);
         break;
-      case 'speech_end':
-        setSpeaking(false);
+      case 'speech_end': {
+        // The server is done SENDING, but the browser is usually still playing
+        // for another 1-2.5s. Reopening now would let the interviewer's own voice
+        // into the mic. Wait for playback to drain (onDrained releases the mic).
+        speechEnded.current = true;
+        const p = player.current;
+        if (!p || p.drained) {
+          releaseMic();
+        } else {
+          clearRelease();
+          releaseTimer.current = setTimeout(
+            () => {
+              releaseTimer.current = null;
+              setSpeaking(false);
+            },
+            p.pendingSeconds * 1000 + RELEASE_FALLBACK_MS,
+          );
+        }
         break;
+      }
       case 'done':
+        clearRelease();
         setSpeaking(false);
         setThinking(false);
         setDone(true);
@@ -111,12 +163,13 @@ export default function InterviewPage() {
       case 'error':
         setError(msg.message);
         setThinking(false);
-        setSpeaking(false);
+        // Only reopen if nothing is audibly playing; otherwise speech_end/onDrained will.
+        if (!player.current || player.current.drained) setSpeaking(false);
         break;
       default:
         break;
     }
-  }, []);
+  }, [clearRelease, releaseMic]);
 
   /** Must run from a click — browsers block audio that isn't user-initiated. */
   async function begin() {
@@ -125,6 +178,12 @@ export default function InterviewPage() {
     try {
       const p = new PcmPlayer(TTS_SAMPLE_RATE);
       await p.unlock();
+      // The interviewer has truly finished talking only when playback drains AND
+      // the server has said the utterance is complete (a mid-sentence buffer dip
+      // also drains, and must not open the mic).
+      p.onDrained = () => {
+        if (speechEnded.current) releaseMic();
+      };
       player.current = p;
 
       const c = await connectVoice(interviewId, {
