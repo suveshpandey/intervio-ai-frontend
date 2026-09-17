@@ -3,11 +3,19 @@
 /** Deepgram expects 16kHz mono PCM16 for speech recognition. */
 export const MIC_SAMPLE_RATE = 16_000;
 
+export interface MicInfo {
+  /** What the browser actually gave us (may differ from the 16k we asked for). */
+  contextSampleRate: number;
+  targetSampleRate: number;
+}
+
 export interface RecorderHandlers {
   /** A ~100ms PCM16 frame, ready to put on the wire. */
   onFrame(pcm: ArrayBuffer): void;
   /** 0–1 loudness, for the mic level meter. */
   onLevel?(rms: number): void;
+  /** Fired once the audio graph is running, with the real device settings. */
+  onReady?(info: MicInfo): void;
 }
 
 export class MicRecorder {
@@ -55,6 +63,11 @@ export class MicRecorder {
     };
 
     this.ctx.createMediaStreamSource(this.stream).connect(this.node);
+
+    this.handlers.onReady?.({
+      contextSampleRate: this.ctx.sampleRate,
+      targetSampleRate: MIC_SAMPLE_RATE,
+    });
   }
 
   /** Stop sending without dropping the mic (used while the interviewer speaks). */

@@ -67,6 +67,11 @@ export async function connectVoice(
 export class VoiceConnection {
   constructor(private readonly ws: WebSocket) {}
 
+  /** Tell the server what the mic actually produced, so a rate mismatch is visible. */
+  sendMicInfo(info: { contextSampleRate: number; targetSampleRate: number }): void {
+    this.send({ type: 'mic_info', ...info });
+  }
+
   /** Dev path: answer by typing instead of speaking. */
   sendText(text: string): void {
     this.send({ type: 'text_answer', text });

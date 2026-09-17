@@ -141,6 +141,7 @@ export default function InterviewPage() {
         const m = new MicRecorder({
           onFrame: (pcm) => c.sendAudio(pcm),
           onLevel: setMicLevel,
+          onReady: (info) => c.sendMicInfo(info),
         });
         await m.start();
         mic.current = m;
