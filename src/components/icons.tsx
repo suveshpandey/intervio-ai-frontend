@@ -241,3 +241,49 @@ export function MenuIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function MicIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill={svg} className={className} aria-hidden>
+      <rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function MicOffIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill={svg} className={className} aria-hidden>
+      <path
+        d="M15 10.5V6a3 3 0 0 0-5.9-.8M9 9v2a3 3 0 0 0 4.7 2.5M5.5 11a6.5 6.5 0 0 0 10.8 4.9M18.3 13.4c.13-.45.2-.92.2-1.4M12 17.5V21M3 3l18 18"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Handset tilted down — the universal "hang up". */
+export function PhoneOffIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill={svg} className={className} aria-hidden>
+      <path
+        d="M21.2 13.9c.5.5.5 1.3 0 1.8l-1.7 1.7c-.4.4-1 .5-1.5.2l-2.7-1.4a1.3 1.3 0 0 1-.7-1.4l.3-1.7a11 11 0 0 0-5.8 0l.3 1.7c.1.5-.2 1.1-.7 1.4l-2.7 1.4c-.5.3-1.1.2-1.5-.2l-1.7-1.7a1.3 1.3 0 0 1 0-1.8c5-5 13.2-5 18.2 0Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function KeyboardIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill={svg} className={className} aria-hidden>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}

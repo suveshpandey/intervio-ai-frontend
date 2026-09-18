@@ -91,6 +91,8 @@ export interface Blueprint {
   level: Level;
   difficulty: Difficulty;
   durationMin: number;
+  /** Interviewer voice (Deepgram model id). */
+  voice?: string;
   sections: PlanSection[];
   probeClaimIds: string[];
   createdAt: string;

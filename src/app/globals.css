@@ -24,6 +24,9 @@
   --success: #5bd99a;
   --warning: #f0b74e;
   --destructive: #f2777a;
+  /* Solid, unmistakable red for the hang-up button (destructive is too soft to read as "end call"). */
+  --hangup: #e5484d;
+  --hangup-hover: #d13b40;
 
   --radius: 0.625rem;
 }
@@ -407,5 +410,60 @@ button:not(:disabled),
   .hover-sweep::after {
     transition: none;
     display: none;
+  }
+}
+
+/* ---- Live interview (meeting room) ---- */
+
+/* Rings that ripple out from the interviewer's avatar while it speaks. */
+@keyframes voice-ripple {
+  from {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  to {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+.voice-ripple {
+  animation: voice-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Slow breathing glow while the interviewer is thinking. */
+@keyframes think-breathe {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+.think-breathe {
+  animation: think-breathe 1.6s ease-in-out infinite;
+}
+
+/* Recording dot next to the timer. */
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.live-dot {
+  animation: live-dot 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-ripple,
+  .think-breathe,
+  .live-dot {
+    animation: none;
   }
 }
