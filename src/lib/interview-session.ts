@@ -49,6 +49,8 @@ export function useInterviewSession(interviewId: string) {
   const [done, setDone] = useState(false);
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
+  /** Finalised phrases of the current answer — kept, so the caption only ever grows. */
+  const [heard, setHeard] = useState('');
   const [interim, setInterim] = useState('');
   const [micLevel, setMicLevel] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -105,14 +107,22 @@ export function useInterviewSession(interviewId: string) {
     (msg: ServerMessage) => {
       switch (msg.type) {
         case 'transcript':
-          // Interim text is the live caption; finals are folded in by the gateway.
-          setInterim(msg.isFinal ? '' : msg.text);
+          // Deepgram revises the current phrase (interim) until it locks it (final).
+          // Finals are appended, not cleared — clearing made the caption blink out
+          // after every phrase.
+          if (msg.isFinal) {
+            setHeard((h) => (h ? `${h} ${msg.text}` : msg.text));
+            setInterim('');
+          } else {
+            setInterim(msg.text);
+          }
           break;
         case 'question':
           clearRelease();
           speechEnded.current = false;
           setThinking(false);
           setSpeaking(true);
+          setHeard('');
           setInterim('');
           setQuestion(msg.text);
           setSectionKey(msg.sectionKey);
@@ -235,6 +245,7 @@ export function useInterviewSession(interviewId: string) {
     const answer = draft.trim();
     if (!answer || !conn.current || thinking || speaking) return;
     setQuestion(null);
+    setHeard('');
     setDraft('');
     conn.current.sendText(answer);
   }
@@ -260,6 +271,7 @@ export function useInterviewSession(interviewId: string) {
     sectionIdx: sections.findIndex((s) => s.key === sectionKey),
     secondsLeft,
     question,
+    heard,
     interim,
     connected,
     connecting,

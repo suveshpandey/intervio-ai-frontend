@@ -43,45 +43,39 @@ export function ParticipantTile({
   muted?: boolean;
 }) {
   // Speech RMS sits low; scale it into a visible but restrained ring.
-  const levelScale = 1 + Math.min(level * 6, 0.45);
+  const levelScale = 1 + Math.min(level * 5, 0.3);
 
   return (
     <section
       aria-label={`${name}, ${subtitle}`}
       className={cn(
-        'relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border bg-card transition-all duration-300 sm:aspect-video',
-        active ? 'border-primary/60 shadow-[0_0_0_1px_var(--primary),0_0_40px_-12px_var(--primary)]' : 'border-border',
+        // Flat surface + a hairline top highlight: depth without a glow.
+        'relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border bg-card sm:aspect-video',
+        'shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--foreground)_5%,transparent)]',
+        'transition-[border-color,box-shadow,opacity] duration-300',
+        active
+          ? 'border-primary/70 shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--foreground)_5%,transparent),0_0_0_1px_var(--primary)]'
+          : 'border-border',
         dimmed && 'opacity-60',
       )}
     >
-      {/* Soft depth behind the avatar. */}
-      <div
-        aria-hidden
-        className={cn(
-          'pointer-events-none absolute inset-0',
-          variant === 'ai'
-            ? 'bg-[radial-gradient(circle_at_50%_45%,color-mix(in_oklab,var(--primary)_14%,transparent),transparent_62%)]'
-            : 'bg-[radial-gradient(circle_at_50%_45%,color-mix(in_oklab,var(--foreground)_6%,transparent),transparent_60%)]',
-        )}
-      />
-
       <div className="relative grid place-items-center">
         {effect === 'ripple' &&
           [0, 600, 1200].map((delay) => (
             <span
               key={delay}
               aria-hidden
-              className="voice-ripple absolute inset-0 rounded-full border border-primary/50"
+              className="voice-ripple absolute inset-0 rounded-full border border-primary/40"
               style={{ animationDelay: `${delay}ms` }}
             />
           ))}
         {effect === 'breathe' && (
-          <span aria-hidden className="think-breathe absolute -inset-3 rounded-full bg-primary/15" />
+          <span aria-hidden className="think-breathe absolute -inset-2 rounded-full border border-primary/30" />
         )}
         {effect === 'level' && (
           <span
             aria-hidden
-            className="absolute inset-0 rounded-full bg-primary/20 transition-transform duration-100 ease-out"
+            className="absolute inset-0 rounded-full border-2 border-primary/45 transition-transform duration-100 ease-out"
             style={{ transform: `scale(${levelScale})` }}
           />
         )}
@@ -90,8 +84,8 @@ export function ParticipantTile({
           className={cn(
             'relative grid h-24 w-24 place-items-center rounded-full text-2xl font-semibold tracking-wide sm:h-28 sm:w-28 sm:text-3xl',
             variant === 'ai'
-              ? 'bg-gradient-to-br from-primary/35 to-primary/10 text-primary ring-1 ring-primary/35'
-              : 'bg-surface text-foreground ring-1 ring-border',
+              ? 'bg-primary/12 text-primary ring-1 ring-primary/25'
+              : 'bg-surface text-foreground/85 ring-1 ring-border',
           )}
         >
           {initials}

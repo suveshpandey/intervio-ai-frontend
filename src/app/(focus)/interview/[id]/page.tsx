@@ -141,6 +141,7 @@ export default function InterviewRoom() {
           <CaptionBar
             interviewerName={interviewerName}
             question={s.question}
+            heard={s.heard}
             interim={s.interim}
             thinking={s.thinking}
           />
