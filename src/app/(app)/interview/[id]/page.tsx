@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { PageLoader } from '@/components/ui/page-loader';
-import { useTranscript } from '@/lib/interviews';
+import { useTranscript, useEndInterview } from '@/lib/interviews';
 import { useBlueprint } from '@/lib/blueprints';
 import { PcmPlayer } from '@/lib/audio-player';
 import { MicRecorder } from '@/lib/audio-recorder';
@@ -37,10 +37,12 @@ interface Exchange {
 
 export default function InterviewPage() {
   const interviewId = useParams<{ id: string }>().id;
+  const router = useRouter();
 
   const transcript = useTranscript(interviewId, true);
   const blueprintId = transcript.data?.interview.blueprintId;
   const blueprint = useBlueprint(blueprintId);
+  const endInterview = useEndInterview(interviewId);
 
   const [history, setHistory] = useState<Exchange[]>([]);
   const [question, setQuestion] = useState<string | null>(null);
@@ -58,6 +60,8 @@ export default function InterviewPage() {
   const [muted, setMuted] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [micState, setMicState] = useState<'starting' | 'ready' | 'failed'>('starting');
+  /** Two-step confirm — one stray click shouldn't kill a real interview. */
+  const [confirmEnd, setConfirmEnd] = useState(false);
 
   const conn = useRef<VoiceConnection | null>(null);
   const player = useRef<PcmPlayer | null>(null);
@@ -171,6 +175,26 @@ export default function InterviewPage() {
     }
   }, [clearRelease, releaseMic]);
 
+  /**
+   * Stop the interview now and go back to the plan.
+   * Tears down locally first so nothing keeps talking or listening, then tells the
+   * server over HTTP (reliable even if the socket has already dropped).
+   */
+  async function endNow() {
+    clearRelease();
+    mic.current?.stop();
+    player.current?.stop();
+    conn.current?.end();
+    conn.current?.close();
+    try {
+      await endInterview.mutateAsync();
+    } catch {
+      /* Leaving anyway — the server also ends it when the socket closes. */
+    }
+    const resumeId = blueprint.data?.blueprint.resumeId;
+    router.push(resumeId ? `/review/${resumeId}` : '/dashboard');
+  }
+
   /** Must run from a click — browsers block audio that isn't user-initiated. */
   async function begin() {
     setError(null);
@@ -256,6 +280,34 @@ export default function InterviewPage() {
                 {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')} left
               </span>
             )}
+            {!done &&
+              (confirmEnd ? (
+                <span className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={endNow}
+                    disabled={endInterview.isPending}
+                    className="rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-60"
+                  >
+                    {endInterview.isPending ? 'Ending…' : 'End now'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmEnd(false)}
+                    className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Keep going
+                  </button>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmEnd(true)}
+                  className="rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
+                >
+                  End interview
+                </button>
+              ))}
           </div>
         </div>
         {sections.length > 0 && (

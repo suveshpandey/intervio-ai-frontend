@@ -17,6 +17,13 @@ export function useSubmitAnswer(interviewId: string) {
   });
 }
 
+/** Stop an interview part-way through. Idempotent, so double-clicking is harmless. */
+export function useEndInterview(interviewId: string) {
+  return useMutation({
+    mutationFn: () => api.post<{ status: string }>(`/interviews/${interviewId}/end`),
+  });
+}
+
 /** Full transcript — used for the summary once the interview ends. */
 export function useTranscript(interviewId: string, enabled: boolean) {
   return useQuery({
