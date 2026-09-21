@@ -41,7 +41,9 @@ export function useInterviewSession(interviewId: string) {
 
   const [question, setQuestion] = useState<string | null>(null);
   const [sectionKey, setSectionKey] = useState('');
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  /** Last clock reading from the server, and when it arrived — we tick from there. */
+  const [clock, setClock] = useState<{ left: number; at: number } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -128,7 +130,8 @@ export function useInterviewSession(interviewId: string) {
           setSectionKey(msg.sectionKey);
           break;
         case 'state':
-          setSecondsLeft(msg.secondsLeft);
+          // The server sends the live value; re-anchoring on it keeps us in sync.
+          setClock({ left: msg.secondsLeft, at: Date.now() });
           setSectionKey(msg.sectionKey);
           break;
         case 'thinking':
@@ -249,6 +252,19 @@ export function useInterviewSession(interviewId: string) {
     setDraft('');
     conn.current.sendText(answer);
   }
+
+  // Tick every second while connected — the clock runs continuously, like the
+  // server's, and stops only when the socket drops (where the server pauses too).
+  const ticking = connected && !done && clock !== null;
+  useEffect(() => {
+    if (!ticking) return;
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [ticking]);
+  const secondsLeft = clock
+    ? Math.max(0, Math.round(clock.left - (ticking ? Math.max(0, now - clock.at) / 1000 : 0)))
+    : null;
 
   // Half-duplex: the mic is closed while the interviewer speaks, so it can
   // never hear its own voice, and reopens the moment it finishes.
