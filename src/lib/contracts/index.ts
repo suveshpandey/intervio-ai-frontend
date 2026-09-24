@@ -174,6 +174,8 @@ export interface InterviewSummary {
   turnCount: number;
   /** Set once the report exists. */
   verdict: Verdict | null;
+  /** Headline claim numbers from the report, when there is one. */
+  claims: { claimsSupported: number; claimsProbed: number } | null;
 }
 
 // ── Interviewer voice ──

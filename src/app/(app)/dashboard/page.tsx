@@ -1,37 +1,30 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/app/page-header';
-import { FileIcon, ArrowRightIcon, ChevronRightIcon, TrashIcon } from '@/components/icons';
+import { ArrowRightIcon } from '@/components/icons';
 import { useSession } from '@/lib/auth';
-import { useResumes, useDeleteResume } from '@/lib/resumes';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import type { ParseStatus, Resume } from '@/lib/contracts';
-
-const STATUS: Record<
-  ParseStatus,
-  { label: string; tone: 'default' | 'muted' | 'success' | 'warning' | 'destructive' }
-> = {
-  pending: { label: 'Queued', tone: 'muted' },
-  processing: { label: 'Analyzing', tone: 'warning' },
-  done: { label: 'Ready', tone: 'success' },
-  failed: { label: 'Failed', tone: 'destructive' },
-};
+import { useResumes } from '@/lib/resumes';
+import { useInterviews } from '@/lib/interviews';
+import { ResumeRow, InterviewRow } from '@/components/app/rows';
+import type { InterviewSummary } from '@/lib/contracts';
 
 export default function DashboardPage() {
   const { user } = useSession();
   const resumes = useResumes();
+  const interviews = useInterviews();
   const items = resumes.data?.resumes ?? [];
+  const runs = interviews.data?.interviews ?? [];
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
-  const ready = items.filter((r) => r.parseStatus === 'done').length;
-  const inProgress = items.filter(
-    (r) => r.parseStatus === 'pending' || r.parseStatus === 'processing',
-  ).length;
+  const loading = resumes.isLoading || interviews.isLoading;
+  const hasAnything = items.length > 0;
+  const live = runs.find((r) => r.status === 'live');
+  const reported = runs.filter((r) => r.claims !== null);
+  const backed = reported.reduce((n, r) => n + (r.claims?.claimsSupported ?? 0), 0);
+  const probed = reported.reduce((n, r) => n + (r.claims?.claimsProbed ?? 0), 0);
 
   return (
     <>
@@ -49,51 +42,134 @@ export default function DashboardPage() {
 
       <Spotlight />
 
-      {!resumes.isLoading && items.length > 0 && (
-        <Stats total={items.length} ready={ready} inProgress={inProgress} />
+      {live && <LiveInterviewCard interview={live} />}
+
+      {!loading && hasAnything && (
+        <Stats
+          resumes={items.length}
+          interviews={runs.filter((r) => r.status !== 'live').length}
+          backed={backed}
+          probed={probed}
+        />
       )}
 
-      <section className="mt-10">
-        {resumes.isLoading ? (
-          <RecentSkeleton />
-        ) : items.length === 0 ? (
+      {loading ? (
+        <RecentSkeleton />
+      ) : !hasAnything ? (
+        <section className="mt-10">
           <EmptyHint />
-        ) : (
-          <>
-            <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-sm font-medium text-muted-foreground">Recent</h2>
-              <Link
-                href="/new"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Analyze another
-              </Link>
-            </div>
-            <ul className="overflow-hidden rounded-xl border border-border bg-card">
+        </section>
+      ) : (
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <Panel title="Resumes" actionLabel="Analyze another" actionHref="/new">
+            <ul className="max-h-[21rem] overflow-y-auto">
               {items.map((r) => (
                 <ResumeRow key={r.id} resume={r} />
               ))}
             </ul>
-          </>
-        )}
-      </section>
+          </Panel>
+
+          <Panel title="Interviews">
+            {runs.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                No interviews yet. Open a ready resume to set one up.
+              </p>
+            ) : (
+              <ul className="max-h-[21rem] overflow-y-auto">
+                {runs.map((r) => (
+                  <InterviewRow key={r.id} interview={r} />
+                ))}
+              </ul>
+            )}
+          </Panel>
+        </div>
+      )}
     </>
   );
 }
 
+/* ── Panels ── */
+
+function Panel({
+  title,
+  actionLabel,
+  actionHref,
+  children,
+}: {
+  title: string;
+  actionLabel?: string;
+  actionHref?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-3 flex items-baseline justify-between">
+        <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
+        {actionLabel && actionHref && (
+          <Link
+            href={actionHref}
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {actionLabel}
+          </Link>
+        )}
+      </div>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">{children}</div>
+    </section>
+  );
+}
+
+/* ── An interview still running: the one thing worth interrupting for ── */
+
+function LiveInterviewCard({ interview }: { interview: InterviewSummary }) {
+  return (
+    <Link
+      href={`/interview/${interview.id}`}
+      className="mt-6 flex items-center gap-4 rounded-xl border border-primary/40 bg-primary/5 px-5 py-4 transition-colors hover:bg-primary/10"
+    >
+      <span className="live-dot h-2 w-2 shrink-0 rounded-full bg-success" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">Interview in progress</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {interview.role} · the clock is running
+        </p>
+      </div>
+      <span className="shrink-0 text-sm text-primary">Continue</span>
+      <ArrowRightIcon className="h-4 w-4 shrink-0 text-primary" />
+    </Link>
+  );
+}
+
+/* ── Interview row ── */
+
 /* ── Analytics (sharp, hairline-divided strip) ── */
 
-function Stats({ total, ready, inProgress }: { total: number; ready: number; inProgress: number }) {
+function Stats({
+  resumes,
+  interviews,
+  backed,
+  probed,
+}: {
+  resumes: number;
+  interviews: number;
+  backed: number;
+  probed: number;
+}) {
   return (
     <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card">
-      <StatCell label="Resumes" value={total} />
-      <StatCell label="Ready" value={ready} dot="bg-success" />
-      <StatCell label="In progress" value={inProgress} dot="bg-warning" />
+      <StatCell label="Resumes" value={resumes} />
+      <StatCell label="Interviews" value={interviews} />
+      {/* The number the product exists for. */}
+      <StatCell
+        label="Claims backed up"
+        value={probed ? `${backed}/${probed}` : '—'}
+        dot={probed ? 'bg-success' : undefined}
+      />
     </div>
   );
 }
 
-function StatCell({ label, value, dot }: { label: string; value: number; dot?: string }) {
+function StatCell({ label, value, dot }: { label: string; value: number | string; dot?: string }) {
   return (
     <div className="px-5 py-4">
       <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -159,59 +235,6 @@ function Waves() {
 }
 
 /* ── Resume row (clean list) ── */
-
-function ResumeRow({ resume }: { resume: Resume }) {
-  const meta = STATUS[resume.parseStatus];
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const deleteResume = useDeleteResume();
-
-  return (
-    <li className="group/row flex items-center border-b border-border last:border-0">
-      <Link
-        href={`/resumes/${resume.id}`}
-        className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
-      >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-muted-foreground transition-colors group-hover:text-primary">
-          <FileIcon className="h-[18px] w-[18px]" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{resume.fileName}</p>
-          <p className="text-xs text-muted-foreground">
-            {new Date(resume.createdAt).toLocaleDateString(undefined, {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            })}
-          </p>
-        </div>
-        <Badge tone={meta.tone}>{meta.label}</Badge>
-        <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-foreground" />
-      </Link>
-
-      <button
-        type="button"
-        onClick={() => setConfirmDelete(true)}
-        aria-label={`Delete ${resume.fileName}`}
-        title="Delete resume"
-        className="mr-2 rounded-lg p-2 text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 group-hover/row:opacity-100"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </button>
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title={`Delete ${resume.fileName}?`}
-          body="This removes the file, everything extracted from it, and every interview and report built on it. It can't be undone."
-          confirmLabel="Delete resume"
-          loading={deleteResume.isPending}
-          error={deleteResume.error instanceof Error ? deleteResume.error.message : null}
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={() => deleteResume.mutate(resume.id, { onSuccess: () => setConfirmDelete(false) })}
-        />
-      )}
-    </li>
-  );
-}
 
 function RecentSkeleton() {
   return (
