@@ -90,10 +90,14 @@ function Analyzing({ name }: { name: string }) {
 }
 
 function Failed({ error }: { error: string | null }) {
+  // A file we couldn't read and a file that isn't a resume are different problems.
+  const notAResume = error?.includes("doesn't look like a resume") ?? false;
   return (
     <div className="grid min-h-[50vh] place-items-center text-center">
       <div className="max-w-md space-y-4">
-        <p className="text-lg font-medium">We couldn&apos;t read that resume</p>
+        <p className="text-lg font-medium">
+          {notAResume ? "That doesn't look like a resume" : "We couldn't read that resume"}
+        </p>
         <p className="text-sm text-muted-foreground">
           {error ?? 'The file may be scanned, image-only, or corrupted. Try a text-based PDF or DOCX.'}
         </p>
