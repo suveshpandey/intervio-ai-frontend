@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { InterviewTranscript, Report, TurnResult } from '@/lib/contracts';
+import type { InterviewSummary, InterviewTranscript, Report, TurnResult } from '@/lib/contracts';
 
 export function useStartInterview() {
   return useMutation({
@@ -44,5 +44,13 @@ export function useReport(interviewId: string) {
     queryFn: () => api.get<{ report: Report }>(`/interviews/${interviewId}/report`),
     enabled: Boolean(interviewId),
     retry: false, // "too short" / "not finished" are answers, not failures
+  });
+}
+
+/** Every interview this user has run — the sidebar history. */
+export function useInterviews() {
+  return useQuery({
+    queryKey: ['interviews'],
+    queryFn: () => api.get<{ interviews: InterviewSummary[] }>('/interviews'),
   });
 }

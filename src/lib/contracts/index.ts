@@ -137,6 +137,14 @@ export interface TranscriptTurn {
   question: string;
   answer: string | null;
   chosenAction: string | null;
+  askedAt: string;
+  /** The scores behind the report — null while an answer is still pending. */
+  evaluation: {
+    answerQuality: number;
+    technicalDepth: number;
+    claimEvidence: 'support' | 'partial' | 'none' | 'weaken';
+    issue: 'generic' | 'memorized' | 'no_answer' | 'off_topic' | 'none';
+  } | null;
 }
 
 export interface InterviewTranscript {
@@ -146,8 +154,26 @@ export interface InterviewTranscript {
     startedAt: string | null;
     endedAt: string | null;
     blueprintId: string;
+    role: string;
+    level: string;
+    durationMin: number;
   };
   turns: TranscriptTurn[];
+}
+
+/** One row of the sidebar's interview history. */
+export interface InterviewSummary {
+  id: string;
+  status: InterviewStatus;
+  role: string;
+  level: string;
+  durationMin: number;
+  createdAt: string;
+  startedAt: string | null;
+  endedAt: string | null;
+  turnCount: number;
+  /** Set once the report exists. */
+  verdict: Verdict | null;
 }
 
 // ── Interviewer voice ──

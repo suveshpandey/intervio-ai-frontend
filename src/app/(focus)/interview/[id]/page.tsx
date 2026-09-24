@@ -134,7 +134,7 @@ export default function InterviewRoom() {
               Your report is being put together now — it takes a few seconds.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <Link href={`/report/${interviewId}`}>
+              <Link href={`/interviews/${interviewId}?tab=report`}>
                 <Button>See your report</Button>
               </Link>
               <Link href="/dashboard">

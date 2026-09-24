@@ -203,7 +203,7 @@ export function useInterviewSession(interviewId: string) {
     // Enough answers to be worth reporting on? Go straight to the report;
     // otherwise back to the plan, where they can start again.
     if (answered.current >= MIN_ANSWERS_FOR_REPORT) {
-      router.push(`/report/${interviewId}`);
+      router.push(`/interviews/${interviewId}?tab=report`);
       return;
     }
     const resumeId = blueprint.data?.blueprint.resumeId;
