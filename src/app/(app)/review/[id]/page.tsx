@@ -13,7 +13,7 @@ import { useResume } from '@/lib/resumes';
 import { useCreateBlueprint } from '@/lib/blueprints';
 import { useVoices } from '@/lib/voices';
 import { VoicePicker } from '@/components/voice-picker';
-import { useStartInterview } from '@/lib/interviews';
+import { useStartInterview, useInterviews } from '@/lib/interviews';
 import { ApiError } from '@/lib/api';
 import type { BlueprintWithClaims, Difficulty, Level } from '@/lib/contracts';
 
@@ -31,6 +31,9 @@ export default function ReviewPage() {
   const voices = useVoices();
   const [result, setResult] = useState<BlueprintWithClaims | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Set when the server refuses because another interview is still running. */
+  const [runningId, setRunningId] = useState<string | null>(null);
+  const interviews = useInterviews();
 
   // Smart defaults, seeded from the resume once it loads.
   const suggestedRole = resume.data?.resume.extracted?.experience?.[0]?.role ?? '';
@@ -67,13 +70,17 @@ export default function ReviewPage() {
             <Button
               onClick={async () => {
                 setError(null);
+                setRunningId(null);
                 try {
                   const res = await startInterview.mutateAsync(result.blueprint.id);
                   router.push(`/interview/${res.interviewId}`);
                 } catch (err) {
-                  setError(
-                    err instanceof ApiError ? err.message : 'Could not start the interview.',
-                  );
+                  setError(err instanceof ApiError ? err.message : 'Could not start the interview.');
+                  // Only one interview may run at a time — point them at the one that is.
+                  if (err instanceof ApiError && err.code === 'interview_in_progress') {
+                    const fresh = await interviews.refetch();
+                    setRunningId(fresh.data?.interviews.find((i) => i.status === 'live')?.id ?? null);
+                  }
                 }
               }}
               disabled={startInterview.isPending}
@@ -85,6 +92,17 @@ export default function ReviewPage() {
               <Button variant="ghost">Back to resume</Button>
             </Link>
           </div>
+
+          {error && (
+            <p className="mt-4 text-sm text-destructive">
+              {error}{' '}
+              {runningId && (
+                <Link href={`/interview/${runningId}`} className="underline underline-offset-2">
+                  Go to it
+                </Link>
+              )}
+            </p>
+          )}
         </>
       ) : (
         <>
