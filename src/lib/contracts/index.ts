@@ -159,3 +159,38 @@ export interface VoiceOption {
   /** Deepgram-hosted demo clip for the preview button. */
   sampleUrl: string;
 }
+
+// ── Report (Phase 5) ──
+/** PRD safe language: evidence bands, never accusations. `not_covered` = time ran out. */
+export type ClaimBand = 'supported' | 'partial' | 'insufficient' | 'not_covered';
+export type Verdict = 'ready' | 'almost' | 'not_ready';
+
+export interface ClaimAuditEntry {
+  claimId: string;
+  text: string;
+  band: ClaimBand;
+  confidence: number;
+  turnsSpent: number;
+  evidence: { turnIdx: number; polarity: 'support' | 'weaken'; rationale: string; quote: string }[];
+}
+
+export interface Report {
+  interviewId: string;
+  role: string;
+  level: string;
+  /** The interview was ended early, so the report covers only what was asked. */
+  partial: boolean;
+  narrative: string;
+  generatedAt: string;
+  stats: {
+    answeredTurns: number;
+    claimsProbed: number;
+    claimsSupported: number;
+    claimsNotCovered: number;
+  };
+  skills: { skill: string; score: number; samples: number }[];
+  dimensions: { key: string; label: string; score: number; detail: string }[];
+  claimAudit: ClaimAuditEntry[];
+  readiness: { verdict: Verdict; reasons: string[]; gaps: string[] };
+  improvements: { title: string; detail: string }[];
+}

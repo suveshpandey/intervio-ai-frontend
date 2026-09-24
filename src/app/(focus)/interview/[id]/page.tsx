@@ -131,11 +131,16 @@ export default function InterviewRoom() {
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center">
             <p className="text-lg font-semibold tracking-tight">This interview has ended</p>
             <p className="mt-1.5 text-sm text-muted-foreground">
-              Your readiness report arrives in the next phase. Thanks for your time.
+              Your report is being put together now — it takes a few seconds.
             </p>
-            <Link href="/dashboard" className="mt-5 inline-block">
-              <Button>Back to dashboard</Button>
-            </Link>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <Link href={`/report/${interviewId}`}>
+                <Button>See your report</Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button variant="outline">Back to dashboard</Button>
+              </Link>
+            </div>
           </div>
         ) : s.connected ? (
           <CaptionBar

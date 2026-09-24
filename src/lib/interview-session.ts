@@ -24,6 +24,9 @@ const ECHO_TAIL_MS = 150;
  */
 const RELEASE_FALLBACK_MS = 1500;
 
+/** Matches the backend's MIN_ANSWERS_FOR_REPORT — below this there is no report to send them to. */
+const MIN_ANSWERS_FOR_REPORT = 3;
+
 /** `idle` = not joined yet; the lobby shows the tile before the mic is opened. */
 export type MicState = 'idle' | 'starting' | 'ready' | 'failed';
 
@@ -66,6 +69,8 @@ export function useInterviewSession(interviewId: string) {
   const speechEnded = useRef(false);
   const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);
+  /** Answers committed so far — decides where "End" lands (a report needs 3). */
+  const answered = useRef(0);
 
   // Seed from the server once, so a refresh mid-interview resumes.
   useEffect(() => {
@@ -76,6 +81,7 @@ export function useInterviewSession(interviewId: string) {
     setQuestion(pending?.question ?? null);
     setSectionKey(pending?.sectionKey ?? turns.at(-1)?.sectionKey ?? '');
     setDone(interview.status !== 'live' || !pending);
+    answered.current = turns.filter((t) => t.answer !== null).length;
   }, [transcript.data]);
 
   // Tear down audio + socket when leaving the page.
@@ -135,6 +141,8 @@ export function useInterviewSession(interviewId: string) {
           setSectionKey(msg.sectionKey);
           break;
         case 'thinking':
+          // Fires exactly once per committed answer.
+          answered.current += 1;
           setThinking(true);
           break;
         case 'speech_end': {
@@ -191,6 +199,12 @@ export function useInterviewSession(interviewId: string) {
       await endInterview.mutateAsync();
     } catch {
       /* Leaving anyway — an explicit end is idempotent server-side. */
+    }
+    // Enough answers to be worth reporting on? Go straight to the report;
+    // otherwise back to the plan, where they can start again.
+    if (answered.current >= MIN_ANSWERS_FOR_REPORT) {
+      router.push(`/report/${interviewId}`);
+      return;
     }
     const resumeId = blueprint.data?.blueprint.resumeId;
     router.push(resumeId ? `/review/${resumeId}` : '/dashboard');

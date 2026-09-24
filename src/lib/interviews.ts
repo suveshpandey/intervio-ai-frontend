@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { InterviewTranscript, TurnResult } from '@/lib/contracts';
+import type { InterviewTranscript, Report, TurnResult } from '@/lib/contracts';
 
 export function useStartInterview() {
   return useMutation({
@@ -30,5 +30,19 @@ export function useTranscript(interviewId: string, enabled: boolean) {
     queryKey: ['interview', interviewId],
     queryFn: () => api.get<InterviewTranscript>(`/interviews/${interviewId}`),
     enabled,
+  });
+}
+
+/**
+ * The report for a finished interview. The backend builds it in the background
+ * when the interview ends; this builds it on demand if that hasn't finished yet,
+ * so the first request can take a few seconds.
+ */
+export function useReport(interviewId: string) {
+  return useQuery({
+    queryKey: ['report', interviewId],
+    queryFn: () => api.get<{ report: Report }>(`/interviews/${interviewId}/report`),
+    enabled: Boolean(interviewId),
+    retry: false, // "too short" / "not finished" are answers, not failures
   });
 }
