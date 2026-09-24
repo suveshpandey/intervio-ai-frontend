@@ -50,3 +50,19 @@ export function useJd(id: string | null) {
     enabled: Boolean(id),
   });
 }
+
+/**
+ * Permanently delete a resume. The backend purges the stored file and cascades
+ * to its claims, plans, interviews and reports — so the interview history has to
+ * be refetched too.
+ */
+export function useDeleteResume() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.del<{ ok: true }>(`/resumes/${id}`),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['resumes'] });
+      void qc.invalidateQueries({ queryKey: ['interviews'] });
+    },
+  });
+}

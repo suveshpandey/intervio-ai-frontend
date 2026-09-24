@@ -1,13 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/app/page-header';
-import { FileIcon, ArrowRightIcon, ChevronRightIcon } from '@/components/icons';
+import { FileIcon, ArrowRightIcon, ChevronRightIcon, TrashIcon } from '@/components/icons';
 import { useSession } from '@/lib/auth';
-import { useResumes } from '@/lib/resumes';
+import { useResumes, useDeleteResume } from '@/lib/resumes';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { ParseStatus, Resume } from '@/lib/contracts';
 
 const STATUS: Record<
@@ -160,11 +162,14 @@ function Waves() {
 
 function ResumeRow({ resume }: { resume: Resume }) {
   const meta = STATUS[resume.parseStatus];
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteResume = useDeleteResume();
+
   return (
-    <li className="border-b border-border last:border-0">
+    <li className="group/row flex items-center border-b border-border last:border-0">
       <Link
         href={`/resumes/${resume.id}`}
-        className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
+        className="group flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
       >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface text-muted-foreground transition-colors group-hover:text-primary">
           <FileIcon className="h-[18px] w-[18px]" />
@@ -182,6 +187,28 @@ function ResumeRow({ resume }: { resume: Resume }) {
         <Badge tone={meta.tone}>{meta.label}</Badge>
         <ChevronRightIcon className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:translate-x-0.5 group-hover:text-foreground" />
       </Link>
+
+      <button
+        type="button"
+        onClick={() => setConfirmDelete(true)}
+        aria-label={`Delete ${resume.fileName}`}
+        title="Delete resume"
+        className="mr-2 rounded-lg p-2 text-muted-foreground/50 opacity-0 transition-all hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 group-hover/row:opacity-100"
+      >
+        <TrashIcon className="h-4 w-4" />
+      </button>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title={`Delete ${resume.fileName}?`}
+          body="This removes the file, everything extracted from it, and every interview and report built on it. It can't be undone."
+          confirmLabel="Delete resume"
+          loading={deleteResume.isPending}
+          error={deleteResume.error instanceof Error ? deleteResume.error.message : null}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => deleteResume.mutate(resume.id, { onSuccess: () => setConfirmDelete(false) })}
+        />
+      )}
     </li>
   );
 }

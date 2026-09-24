@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/ui/page-loader';
 import { ReportView } from '@/components/report/report-view';
 import { TranscriptView } from '@/components/report/transcript-view';
-import { useReport, useTranscript } from '@/lib/interviews';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { TrashIcon } from '@/components/icons';
+import { useDeleteInterview, useReport, useTranscript } from '@/lib/interviews';
 import { useBlueprint } from '@/lib/blueprints';
 import { cn } from '@/lib/utils';
 import type { InterviewStatus } from '@/lib/contracts';
@@ -32,6 +34,8 @@ export default function InterviewPage() {
   const router = useRouter();
   const search = useSearchParams();
   const [tab, setTab] = useState<Tab>(search.get('tab') === 'report' ? 'report' : 'transcript');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const deleteInterview = useDeleteInterview();
 
   const transcript = useTranscript(interviewId, true);
   const interview = transcript.data?.interview;
@@ -70,6 +74,15 @@ export default function InterviewPage() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{interview.role}</h1>
           <Badge tone={status.tone}>{status.label}</Badge>
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            title="Delete this interview"
+            className="ml-auto flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            <TrashIcon className="h-4 w-4" />
+            Delete
+          </button>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
           {interview.level} level
@@ -129,6 +142,25 @@ export default function InterviewPage() {
           </div>
         )}
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete this interview?"
+          body={
+            <>
+              Its transcript{answered > 0 && ` (${answered} answer${answered === 1 ? '' : 's'})`} and report
+              are deleted for good. Your resume and its claims stay.
+            </>
+          }
+          confirmLabel="Delete interview"
+          loading={deleteInterview.isPending}
+          error={deleteInterview.error instanceof Error ? deleteInterview.error.message : null}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() =>
+            deleteInterview.mutate(interviewId, { onSuccess: () => router.replace('/dashboard') })
+          }
+        />
+      )}
     </div>
   );
 }
