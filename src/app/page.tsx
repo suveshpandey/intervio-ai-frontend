@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { LiveDemo } from '@/components/landing/live-demo';
+import { ClaimExplorer } from '@/components/landing/claim-explorer';
+import { VoicePreview } from '@/components/landing/voice-preview';
+import { Reveal } from '@/components/landing/reveal';
 
 /* ------------------------------------------------------------------ */
 /* Icons (inline, stroke 1.5 — no icon dependency)                     */
@@ -149,102 +153,10 @@ function IconTile({ children }: { children: React.ReactNode }) {
   );
 }
 
-function BandDot({ tone }: { tone: 'success' | 'warning' | 'destructive' }) {
-  const color =
-    tone === 'success' ? 'bg-success' : tone === 'warning' ? 'bg-warning' : 'bg-destructive';
-  return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
-}
 
 /* ------------------------------------------------------------------ */
 /* Hero product mockup — a live interview session card                 */
 /* ------------------------------------------------------------------ */
-
-function InterviewMock() {
-  return (
-    <div className="relative">
-      <div className="edge-top shadow-pop overflow-hidden rounded-2xl border border-border bg-card">
-        {/* window bar */}
-        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
-            </span>
-            <span className="text-sm font-medium">Live interview</span>
-          </div>
-          <span className="ml-auto font-mono text-xs text-muted-foreground">
-            Claim verification
-          </span>
-          <span className="font-mono text-xs tabular-nums text-muted-foreground">12:47</span>
-        </div>
-
-        {/* transcript */}
-        <div className="space-y-4 px-4 py-5 sm:px-5">
-          <div className="flex gap-3">
-            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-primary">
-              <IconMic className="h-3.5 w-3.5" />
-            </span>
-            <div className="rounded-2xl rounded-tl-sm bg-surface px-3.5 py-2.5 text-sm leading-relaxed text-foreground/90">
-              You wrote that you “built a Node.js backend handling 100K requests/day.” Walk me
-              through how you measured that peak — and what broke first.
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <div className="max-w-[80%] rounded-2xl rounded-tr-sm border border-border bg-background px-3.5 py-2.5 text-sm leading-relaxed text-muted-foreground">
-              We added a Redis read-through cache and it got much faster…
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 pl-10">
-            <div className="flex items-end gap-0.5" aria-hidden>
-              {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                <span
-                  key={i}
-                  className="eq-bar w-0.5 rounded-full bg-primary/70"
-                  style={{ height: 14, animationDelay: `${i * 0.11}s` }}
-                />
-              ))}
-            </div>
-            <span className="font-mono text-xs text-muted-foreground">listening…</span>
-          </div>
-        </div>
-
-        {/* claim-audit result — grounded in PRD worked example c_1 */}
-        <div className="border-t border-border px-4 py-4 sm:px-5">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              Claim audit
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-2 py-0.5 text-xs font-medium text-warning">
-              <BandDot tone="warning" />
-              Partial · 72%
-            </span>
-          </div>
-          <p className="text-sm text-foreground/80">
-            “100K requests/day backend”
-            <span className="text-muted-foreground">
-              {' '}
-              — architecture &amp; caching explained well; couldn&apos;t substantiate the
-              peak-traffic measurement.
-            </span>
-          </p>
-        </div>
-      </div>
-
-      {/* floating readiness chip */}
-      <div className="animate-float shadow-float absolute -bottom-6 -left-4 hidden rounded-xl border border-border bg-surface px-4 py-3 sm:block">
-        <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-          Readiness
-        </div>
-        <div className="mt-0.5 flex items-baseline gap-1.5">
-          <span className="text-xl font-semibold tabular-nums text-primary">7.4</span>
-          <span className="text-xs text-muted-foreground">/ 10</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Content                                                             */
@@ -294,26 +206,6 @@ const FEATURES = [
   },
 ];
 
-const AUDIT_ROWS = [
-  {
-    tone: 'success' as const,
-    label: 'Supported',
-    claim: 'Cut p95 latency 40% with a Redis cache',
-    conf: '91%',
-  },
-  {
-    tone: 'warning' as const,
-    label: 'Partial',
-    claim: 'Backend handling 100K requests/day',
-    conf: '72%',
-  },
-  {
-    tone: 'destructive' as const,
-    label: 'Insufficient',
-    claim: 'Led migration to event-driven architecture',
-    conf: '38%',
-  },
-];
 
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
@@ -417,7 +309,7 @@ export default function LandingPage() {
         </div>
 
         <div className="lg:pl-4">
-          <InterviewMock />
+          <LiveDemo />
         </div>
       </section>
 
@@ -434,8 +326,8 @@ export default function LandingPage() {
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-3">
-          {STEPS.map(({ n, icon: Icon, title, body }) => (
-            <div key={n} className="bg-card p-7">
+          {STEPS.map(({ n, icon: Icon, title, body }, i) => (
+            <Reveal key={n} delay={i * 90} className="bg-card p-7">
               <div className="flex items-center justify-between">
                 <IconTile>
                   <Icon className="h-5 w-5" />
@@ -446,9 +338,30 @@ export default function LandingPage() {
               </div>
               <h3 className="mt-6 text-lg font-medium">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
+      </section>
+
+      {/* hear it */}
+      <section className="mx-auto max-w-6xl px-5 pb-4">
+        <Reveal>
+          <div className="edge-top rounded-2xl border border-border bg-card p-6 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div className="max-w-md">
+                <Eyebrow>Your interviewer</Eyebrow>
+                <h2 className="mt-4 text-2xl font-semibold tracking-tight">Hear who you&apos;ll be talking to.</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Three voices to choose from before you start. Press play — this is the real thing,
+                  not a description of it.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6">
+              <VoicePreview />
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* why it's different */}
@@ -474,41 +387,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="edge-top rounded-2xl border border-border bg-card p-2">
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Claim audit
-              </span>
-              <span className="font-mono text-xs text-muted-foreground">3 claims</span>
-            </div>
-            <div className="space-y-2">
-              {AUDIT_ROWS.map((row) => (
-                <div
-                  key={row.claim}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3"
-                >
-                  <BandDot tone={row.tone} />
-                  <span className="min-w-0 flex-1 truncate text-sm text-foreground/90">
-                    {row.claim}
-                  </span>
-                  <span
-                    className={`shrink-0 text-xs font-medium ${
-                      row.tone === 'success'
-                        ? 'text-success'
-                        : row.tone === 'warning'
-                          ? 'text-warning'
-                          : 'text-destructive'
-                    }`}
-                  >
-                    {row.label}
-                  </span>
-                  <span className="w-10 shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                    {row.conf}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ClaimExplorer />
         </div>
       </section>
 
@@ -522,14 +401,14 @@ export default function LandingPage() {
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="bg-card p-7">
+          {FEATURES.map(({ icon: Icon, title, body }, i) => (
+            <Reveal key={title} delay={i * 80} className="bg-card p-7">
               <IconTile>
                 <Icon className="h-5 w-5" />
               </IconTile>
               <h3 className="mt-6 text-lg font-medium">{title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
