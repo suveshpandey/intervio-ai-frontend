@@ -15,6 +15,8 @@ export interface PublicUser {
   name: string | null;
   avatarUrl: string | null;
   authProvider: 'email' | 'google';
+  /** Admin is an env allowlist on the server; this only decides whether to show the link. */
+  isAdmin?: boolean;
 }
 
 // ── Phase 1: Upload & Extract ──
@@ -221,4 +223,33 @@ export interface Report {
   claimAudit: ClaimAuditEntry[];
   readiness: { verdict: Verdict; reasons: string[]; gaps: string[] };
   improvements: { title: string; detail: string }[];
+}
+
+// ── Admin usage + spend ──
+export interface UsageSummary {
+  currency: { usdToInr: number };
+  windowDays: number;
+  totals: {
+    allTimeUsd: number;
+    allTimeCalls: number;
+    todayUsd: number;
+    weekUsd: number;
+    interviews: number;
+    perInterviewUsd: number;
+  };
+  byModel: {
+    provider: string;
+    model: string;
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    units: number;
+    costUsd: number;
+    /** We are guessing this model's rate. */
+    estimated: boolean;
+  }[];
+  byTask: { kind: string; task: string; calls: number; costUsd: number }[];
+  byDay: { day: string; costUsd: number; calls: number }[];
+  topUsers: { userId: string | null; email: string; costUsd: number; calls: number }[];
+  turnLatencyMs: { p50: number; p95: number; max: number };
 }

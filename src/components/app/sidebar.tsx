@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { DashboardIcon, PlusIcon } from '@/components/icons';
+import { DashboardIcon, PlusIcon, ReportsIcon } from '@/components/icons';
+import { useSession } from '@/lib/auth';
 import { useInterviews } from '@/lib/interviews';
 import { cn } from '@/lib/utils';
 import type { InterviewSummary } from '@/lib/contracts';
@@ -38,6 +39,9 @@ function statusDot(interview: InterviewSummary): string {
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { user } = useSession();
+  // The server enforces this; hiding the link just avoids sending people at a 403.
+  const nav = user?.isAdmin ? [...NAV, { href: '/admin', label: 'Usage & spend', icon: ReportsIcon }] : NAV;
 
   return (
     <div className="flex h-full flex-col p-4">
@@ -53,7 +57,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
 
       <nav className="space-y-1">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {nav.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (
             <Link

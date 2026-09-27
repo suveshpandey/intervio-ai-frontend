@@ -9,6 +9,7 @@ import { useSession } from '@/lib/auth';
 import { useResumes } from '@/lib/resumes';
 import { useInterviews } from '@/lib/interviews';
 import { ResumeRow, InterviewRow } from '@/components/app/rows';
+import { GettingStarted } from '@/components/app/getting-started';
 import type { InterviewSummary } from '@/lib/contracts';
 
 export default function DashboardPage() {
@@ -44,6 +45,8 @@ export default function DashboardPage() {
 
       {live && <LiveInterviewCard interview={live} />}
 
+      {!loading && <GettingStarted resumes={items} interviews={runs} />}
+
       {!loading && hasAnything && (
         <Stats
           resumes={items.length}
@@ -55,11 +58,7 @@ export default function DashboardPage() {
 
       {loading ? (
         <RecentSkeleton />
-      ) : !hasAnything ? (
-        <section className="mt-10">
-          <EmptyHint />
-        </section>
-      ) : (
+      ) : !hasAnything ? null : (
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           <Panel title="Resumes" actionLabel="Analyze another" actionHref="/new">
             <ul className="max-h-[21rem] overflow-y-auto">
@@ -266,21 +265,3 @@ function RecentSkeleton() {
 
 /* ── Empty (has spotlight above; keep this quiet) ── */
 
-function EmptyHint() {
-  const steps = ['Upload resume', 'Live interview', 'Readiness report'];
-  return (
-    <div className="rounded-xl border border-dashed border-border px-6 py-8 text-center">
-      <p className="text-sm text-muted-foreground">Your analyzed resumes will show up here.</p>
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-        {steps.map((s, i) => (
-          <span key={s} className="flex items-center gap-3">
-            {i > 0 && <span className="text-muted-foreground/40">→</span>}
-            <span>
-              <span className="font-mono text-xs text-primary">{i + 1}</span> {s}
-            </span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
