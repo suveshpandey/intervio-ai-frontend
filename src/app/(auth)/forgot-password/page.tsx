@@ -37,6 +37,16 @@ export default function ForgotPasswordPage() {
               If an account exists for <span className="text-foreground">{email}</span>, we&apos;ve
               sent a link to reset your password. It expires in 60 minutes.
             </p>
+            {/* Our mail comes from a new sender, so it often lands in spam at first. */}
+            <div className="mt-5 rounded-xl border border-border bg-surface px-4 py-3 text-left text-sm leading-relaxed text-muted-foreground">
+              <p className="font-medium text-foreground">Don&apos;t see it?</p>
+              <p className="mt-1">
+                Check your <span className="text-foreground">Spam</span> or{' '}
+                <span className="text-foreground">Promotions</span> folder — it can take a minute to
+                arrive. If you find it there, mark it &ldquo;Not spam&rdquo; so the next one reaches your
+                inbox.
+              </p>
+            </div>
             <Link href="/login" className="mt-6 inline-block">
               <Button variant="outline">Back to log in</Button>
             </Link>
