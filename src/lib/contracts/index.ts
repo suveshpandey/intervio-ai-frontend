@@ -145,7 +145,14 @@ export interface TranscriptTurn {
     answerQuality: number;
     technicalDepth: number;
     claimEvidence: 'support' | 'partial' | 'none' | 'weaken';
-    issue: 'generic' | 'memorized' | 'no_answer' | 'off_topic' | 'none';
+    issue:
+      | 'generic'
+      | 'memorized'
+      | 'no_answer'
+      | 'off_topic'
+      | 'repeat_request'
+      | 'clarify_request'
+      | 'none';
   } | null;
 }
 

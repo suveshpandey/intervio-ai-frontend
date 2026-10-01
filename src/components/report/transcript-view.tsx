@@ -15,6 +15,9 @@ function AnswerBadges({ evaluation }: { evaluation: NonNullable<TranscriptTurn['
       {issue === 'memorized' && <Badge tone="muted">Textbook answer</Badge>}
       {issue === 'no_answer' && <Badge tone="muted">Didn&apos;t know</Badge>}
       {issue === 'off_topic' && <Badge tone="muted">Off topic</Badge>}
+      {(issue === 'repeat_request' || issue === 'clarify_request') && (
+        <Badge tone="muted">Asked to repeat</Badge>
+      )}
       <span className="font-mono text-[11px] text-muted-foreground/60">
         {(answerQuality * 10).toFixed(1)}/10
       </span>
