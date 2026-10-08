@@ -27,6 +27,15 @@ const RELEASE_FALLBACK_MS = 1500;
 /** Matches the backend's MIN_ANSWERS_FOR_REPORT — below this there is no report to send them to. */
 const MIN_ANSWERS_FOR_REPORT = 3;
 
+/** How long "you may need to repeat that" stays up after hearing recovers. */
+const RECOVERED_NOTICE_MS = 5000;
+
+/**
+ * What to tell the candidate about how well we can hear them.
+ * `recovered` is a brief, front-end-only state after trouble clears.
+ */
+export type Hearing = 'ok' | 'trouble' | 'lost' | 'recovered';
+
 /** `idle` = not joined yet; the lobby shows the tile before the mic is opened. */
 export type MicState = 'idle' | 'starting' | 'ready' | 'failed';
 
@@ -61,6 +70,8 @@ export function useInterviewSession(interviewId: string) {
   const [muted, setMuted] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [micState, setMicState] = useState<MicState>('idle');
+  const [hearing, setHearing] = useState<Hearing>('ok');
+  const recoveredTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const conn = useRef<VoiceConnection | null>(null);
   const player = useRef<PcmPlayer | null>(null);
@@ -88,6 +99,7 @@ export function useInterviewSession(interviewId: string) {
   useEffect(
     () => () => {
       if (releaseTimer.current) clearTimeout(releaseTimer.current);
+      if (recoveredTimer.current) clearTimeout(recoveredTimer.current);
       mic.current?.stop();
       conn.current?.close();
       player.current?.close();
@@ -170,6 +182,16 @@ export function useInterviewSession(interviewId: string) {
           setSpeaking(false);
           setThinking(false);
           setDone(true);
+          break;
+        case 'hearing':
+          if (recoveredTimer.current) clearTimeout(recoveredTimer.current);
+          if (msg.status === 'ok') {
+            // Briefly say it's back — words spoken during the trouble may be gone.
+            setHearing((h) => (h === 'ok' ? 'ok' : 'recovered'));
+            recoveredTimer.current = setTimeout(() => setHearing('ok'), RECOVERED_NOTICE_MS);
+          } else {
+            setHearing(msg.status);
+          }
           break;
         case 'error':
           setError(msg.message);
@@ -311,6 +333,7 @@ export function useInterviewSession(interviewId: string) {
     error,
     micState,
     micLevel,
+    hearing,
     muted,
     showTyping,
     draft,

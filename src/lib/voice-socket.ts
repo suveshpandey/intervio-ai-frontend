@@ -10,7 +10,9 @@ export type ServerMessage =
   | { type: 'state'; sectionKey: string; turnIdx: number; secondsLeft: number }
   | { type: 'thinking' }
   | { type: 'done' }
-  | { type: 'error'; code: string; message: string };
+  | { type: 'error'; code: string; message: string }
+  /** How well the server can hear the candidate (it reconnects a deaf speech stream itself). */
+  | { type: 'hearing'; status: 'ok' | 'trouble' | 'lost' };
 
 export interface VoiceHandlers {
   onMessage(msg: ServerMessage): void;
