@@ -57,6 +57,12 @@ export function useInterviewSession(interviewId: string) {
   const [clock, setClock] = useState<{ left: number; at: number } | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [connected, setConnected] = useState(false);
+  /**
+   * The interviewer has asked the first question. The socket connects well
+   * before that — the server still has to open the speech streams and send the
+   * question (2-4s) — and the room used to sit silent in between.
+   */
+  const [started, setStarted] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -138,6 +144,7 @@ export function useInterviewSession(interviewId: string) {
           }
           break;
         case 'question':
+          setStarted(true);
           clearRelease();
           speechEnded.current = false;
           setThinking(false);
@@ -250,7 +257,10 @@ export function useInterviewSession(interviewId: string) {
       const c = await connectVoice(interviewId, {
         onMessage,
         onAudio: (chunk) => p.enqueue(chunk),
-        onClose: () => setConnected(false),
+        onClose: () => {
+          setConnected(false);
+          setStarted(false); // a rejoin waits for its question again
+        },
       });
       conn.current = c;
       setConnected(true);
@@ -327,6 +337,7 @@ export function useInterviewSession(interviewId: string) {
     interim,
     connected,
     connecting,
+    started,
     speaking,
     thinking,
     done,
