@@ -67,7 +67,7 @@ export function NextStep({ interviews, resumes }: { interviews: InterviewSummary
   const step = pick(interviews, resumes);
 
   return (
-    <section className="next-step-card relative flex flex-col overflow-hidden rounded-2xl border p-6">
+    <section className="relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-6">
       <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
         {step.live && <span aria-hidden className="live-dot h-1.5 w-1.5 rounded-full bg-success" />}
         {step.eyebrow}
