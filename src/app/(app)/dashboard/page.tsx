@@ -54,8 +54,8 @@ export default function DashboardPage() {
               <NextStep interviews={runs} resumes={items} />
             </div>
 
-            <InterviewList interviews={runs} />
             <ResumeShelf resumes={items} />
+            <InterviewList interviews={runs} />
           </>
         )
       )}

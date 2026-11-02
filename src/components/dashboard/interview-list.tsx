@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@/components/icons';
 import { VERDICT, formatDay } from '@/components/dashboard/verdict';
 import type { InterviewSummary } from '@/lib/contracts';
 
-/** Shown before "Show all" — the full history also lives in the sidebar. */
-const INITIAL = 6;
+/** Only the most recent ones — the full history lives in the sidebar. */
+const LIMIT = 10;
 
 /** A small meter: one segment per claim probed, filled for each one backed up. */
 function ClaimMeter({ supported, probed }: { supported: number; probed: number }) {
@@ -94,14 +93,13 @@ function Row({ interview }: { interview: InterviewSummary }) {
 }
 
 export function InterviewList({ interviews }: { interviews: InterviewSummary[] }) {
-  const [showAll, setShowAll] = useState(false);
-  const shown = showAll ? interviews : interviews.slice(0, INITIAL);
+  const shown = interviews.slice(0, LIMIT);
 
   return (
     <section className="mt-10">
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-sm font-medium">
-          Interviews <span className="ml-1 font-mono text-xs text-muted-foreground">{interviews.length}</span>
+          Recent interviews <span className="ml-1 font-mono text-xs text-muted-foreground">{shown.length}</span>
         </h2>
         <span className="hidden font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground/70 sm:block">
           claims held up · verdict
@@ -119,15 +117,6 @@ export function InterviewList({ interviews }: { interviews: InterviewSummary[] }
               <Row key={iv.id} interview={iv} />
             ))}
           </ul>
-          {interviews.length > INITIAL && (
-            <button
-              type="button"
-              onClick={() => setShowAll((s) => !s)}
-              className="w-full border-t border-border py-3 text-sm text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-            >
-              {showAll ? 'Show fewer' : `Show all ${interviews.length}`}
-            </button>
-          )}
         </div>
       )}
     </section>
