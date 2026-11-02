@@ -629,3 +629,13 @@ button:not(:disabled),
     animation: none;
   }
 }
+
+/* Dashboard "Next step" card: accent-tinted in dark, a plain card in light. */
+.next-step-card {
+  border-color: color-mix(in oklab, var(--primary) 30%, var(--border));
+  background: linear-gradient(160deg, color-mix(in oklab, var(--primary) 10%, var(--card)), var(--card) 65%);
+}
+[data-theme='light'] .next-step-card {
+  border-color: var(--border);
+  background: var(--card);
+}
