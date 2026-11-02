@@ -1,27 +1,31 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/app/page-header';
-import { PageLoader } from '@/components/ui/page-loader';
-import { useUsage } from '@/lib/admin';
-import { cn } from '@/lib/utils';
-import type { UsageSummary } from '@/lib/contracts';
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/app/page-header";
+import { PageLoader } from "@/components/ui/page-loader";
+import { useUsage } from "@/lib/admin";
+import { cn } from "@/lib/utils";
+import type { UsageSummary } from "@/lib/contracts";
 
 /** Spend is in cents-and-under territory, so plain $0.00 would read as zero everywhere. */
 function usd(value: number): string {
-  if (value === 0) return '$0';
+  if (value === 0) return "$0";
   if (value < 0.01) return `$${value.toFixed(4)}`;
   if (value < 1) return `$${value.toFixed(3)}`;
   return `$${value.toFixed(2)}`;
 }
 
 const inr = (value: number, rate: number): string =>
-  `₹${(value * rate).toLocaleString('en-IN', { maximumFractionDigits: value * rate < 100 ? 2 : 0 })}`;
+  `₹${(value * rate).toLocaleString("en-IN", { maximumFractionDigits: value * rate < 100 ? 2 : 0 })}`;
 
 const compact = (n: number): string =>
-  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+  n >= 1_000_000
+    ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1000
+      ? `${(n / 1000).toFixed(1)}k`
+      : String(n);
 
 export default function AdminPage() {
   const { data, isLoading, error } = useUsage();
@@ -46,12 +50,23 @@ export default function AdminPage() {
 
   return (
     <div className="pb-20">
-      <PageHeader title="Usage & spend" description={`Everything metered. Last ${windowDays} days unless stated.`} />
+      <PageHeader
+        title="Usage & spend"
+        description={`Everything metered. Last ${windowDays} days unless stated.`}
+      />
 
       {/* The four numbers worth knowing at a glance. */}
       <div className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border lg:grid-cols-4">
-        <Stat label="Today" value={usd(totals.todayUsd)} sub={inr(totals.todayUsd, currency.usdToInr)} />
-        <Stat label="Last 7 days" value={usd(totals.weekUsd)} sub={inr(totals.weekUsd, currency.usdToInr)} />
+        <Stat
+          label="Today"
+          value={usd(totals.todayUsd)}
+          sub={inr(totals.todayUsd, currency.usdToInr)}
+        />
+        <Stat
+          label="Last 7 days"
+          value={usd(totals.weekUsd)}
+          sub={inr(totals.weekUsd, currency.usdToInr)}
+        />
         <Stat
           label="Per interview"
           value={usd(totals.perInterviewUsd)}
@@ -69,70 +84,93 @@ export default function AdminPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card title="Where the money goes" note="By model, last 30 days">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-2.5 font-normal">Model</th>
-                <th className="px-4 py-2.5 text-right font-normal">Calls</th>
-                <th className="px-4 py-2.5 text-right font-normal">Volume</th>
-                <th className="px-4 py-2.5 text-right font-normal">Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.byModel.map((row) => (
-                <tr key={`${row.provider}-${row.model}`} className="border-b border-border last:border-0">
-                  <td className="max-w-[13rem] px-4 py-3">
-                    <p className="truncate font-medium">{row.model}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {row.provider}
-                      {row.estimated && ' · rate estimated'}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">
-                    {compact(row.calls)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
-                    {row.inputTokens + row.outputTokens > 0
-                      ? `${compact(row.inputTokens)} in / ${compact(row.outputTokens)} out`
-                      : row.units > 0
-                        ? `${compact(Math.round(row.units))} ${row.model.startsWith('flux') ? 'chars' : 'sec'}`
-                        : '—'}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono tabular-nums">{usd(row.costUsd)}</td>
+          <Scroll>
+            <table className="w-full min-w-[30rem] text-sm">
+              <thead className="sticky top-0 z-10 bg-card shadow-[0_1px_0_var(--border)]">
+                <tr className="text-left font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <th className="whitespace-nowrap px-4 py-2.5 font-normal">
+                    Model
+                  </th>
+                  <th className="px-4 py-2.5 text-right font-normal">Calls</th>
+                  <th className="px-4 py-2.5 text-right font-normal">Volume</th>
+                  <th className="px-4 py-2.5 text-right font-normal">Cost</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.byModel.map((row) => (
+                  <tr
+                    key={`${row.provider}-${row.model}`}
+                    className="border-b border-border last:border-0"
+                  >
+                    <td className="max-w-[13rem] px-4 py-3">
+                      <p className="truncate font-medium">{row.model}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {row.provider}
+                        {row.estimated && " · rate estimated"}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-muted-foreground">
+                      {compact(row.calls)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs tabular-nums text-muted-foreground">
+                      {row.inputTokens + row.outputTokens > 0
+                        ? `${compact(row.inputTokens)} in / ${compact(row.outputTokens)} out`
+                        : row.units > 0
+                          ? `${compact(Math.round(row.units))} ${row.model.startsWith("flux") ? "chars" : "sec"}`
+                          : "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
+                      {usd(row.costUsd)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Scroll>
         </Card>
 
         <div className="space-y-6">
           <Card title="By step" note="Which part of the product spends it">
-            <ul className="divide-y divide-border">
-              {data.byTask.map((row) => (
-                <li key={`${row.kind}-${row.task}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                  <span className="flex-1 capitalize">{row.task.replace(/_/g, ' ')}</span>
-                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                    {compact(row.calls)} calls
-                  </span>
-                  <span className="w-16 text-right font-mono tabular-nums">{usd(row.costUsd)}</span>
-                </li>
-              ))}
-            </ul>
+            <Scroll maxHeight="max-h-72">
+              <ul className="min-w-[18rem] divide-y divide-border">
+                {data.byTask.map((row) => (
+                  <li
+                    key={`${row.kind}-${row.task}`}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm"
+                  >
+                    <span className="flex-1 whitespace-nowrap capitalize">
+                      {row.task.replace(/_/g, " ")}
+                    </span>
+                    <span className="whitespace-nowrap font-mono text-xs tabular-nums text-muted-foreground">
+                      {compact(row.calls)} calls
+                    </span>
+                    <span className="w-20 shrink-0 whitespace-nowrap text-right font-mono tabular-nums">
+                      {usd(row.costUsd)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Scroll>
           </Card>
 
-          <Card title="Live turn latency" note="Model call only — what a candidate waits for">
+          <Card
+            title="Live turn latency"
+            note="Model call only — what a candidate waits for"
+          >
             <div className="grid grid-cols-3 divide-x divide-border">
-              {(['p50', 'p95', 'max'] as const).map((key) => (
+              {(["p50", "p95", "max"] as const).map((key) => (
                 <div key={key} className="px-4 py-4">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{key}</p>
+                  <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                    {key}
+                  </p>
                   <p
                     className={cn(
-                      'mt-1 text-xl font-semibold tabular-nums',
+                      "mt-1 text-xl font-semibold tabular-nums",
                       data.turnLatencyMs[key] > 6000
-                        ? 'text-destructive'
+                        ? "text-destructive"
                         : data.turnLatencyMs[key] > 3500
-                          ? 'text-warning'
-                          : 'text-success',
+                          ? "text-warning"
+                          : "text-success",
                     )}
                   >
                     {(data.turnLatencyMs[key] / 1000).toFixed(1)}s
@@ -145,30 +183,48 @@ export default function AdminPage() {
       </div>
 
       <Card title="Top spenders" note="Last 30 days" className="mt-6">
-        <ul className="divide-y divide-border">
-          {data.topUsers.length === 0 ? (
-            <li className="px-4 py-6 text-center text-sm text-muted-foreground">Nothing metered yet.</li>
-          ) : (
-            data.topUsers.map((user, i) => (
-              <li key={`${user.userId ?? 'deleted'}-${i}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                <span className="font-mono text-xs text-muted-foreground/60">{i + 1}</span>
-                <span className={cn('flex-1 truncate', !user.userId && 'italic text-muted-foreground')}>
-                  {user.email}
-                </span>
-                <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                  {compact(user.calls)} calls
-                </span>
-                <span className="w-16 text-right font-mono tabular-nums">{usd(user.costUsd)}</span>
+        <Scroll maxHeight="max-h-80">
+          <ul className="min-w-[22rem] divide-y divide-border">
+            {data.topUsers.length === 0 ? (
+              <li className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Nothing metered yet.
               </li>
-            ))
-          )}
-        </ul>
+            ) : (
+              data.topUsers.map((user, i) => (
+                <li
+                  key={`${user.userId ?? "deleted"}-${i}`}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm"
+                >
+                  <span className="font-mono text-xs text-muted-foreground/60">
+                    {i + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "min-w-0 flex-1 truncate",
+                      !user.userId && "italic text-muted-foreground",
+                    )}
+                  >
+                    {user.email}
+                  </span>
+                  <span className="whitespace-nowrap font-mono text-xs tabular-nums text-muted-foreground">
+                    {compact(user.calls)} calls
+                  </span>
+                  <span className="w-20 shrink-0 whitespace-nowrap text-right font-mono tabular-nums">
+                    {usd(user.costUsd)}
+                  </span>
+                </li>
+              ))
+            )}
+          </ul>
+        </Scroll>
       </Card>
 
       <p className="mt-6 text-xs leading-relaxed text-muted-foreground/70">
-        Rates are estimates from public list prices, not invoices — euri doesn&apos;t publish a
-        per-model rate card. Update <span className="font-mono">config/pricing.ts</span> from a real
-        bill and every figure here recomputes, since the token and second counts are stored raw.
+        Rates are estimates from public list prices, not invoices — euri
+        doesn&apos;t publish a per-model rate card. Update{" "}
+        <span className="font-mono">config/pricing.ts</span> from a real bill
+        and every figure here recomputes, since the token and second counts are
+        stored raw.
       </p>
     </div>
   );
@@ -176,12 +232,48 @@ export default function AdminPage() {
 
 /* ── pieces ── */
 
-function Stat({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+function Stat({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+}) {
   return (
     <div className="bg-card px-5 py-4">
-      <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={cn('mt-1.5 text-2xl font-semibold tabular-nums', accent && 'text-primary')}>{value}</p>
-      {sub && <p className="mt-1 truncate text-xs text-muted-foreground">{sub}</p>}
+      <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-1.5 text-2xl font-semibold tabular-nums",
+          accent && "text-primary",
+        )}
+      >
+        {value}
+      </p>
+      {sub && (
+        <p className="mt-1 truncate text-xs text-muted-foreground">{sub}</p>
+      )}
+    </div>
+  );
+}
+
+/** Scrolls in both directions so a wide table never gets clipped by its card. */
+function Scroll({
+  maxHeight = "max-h-[26rem]",
+  children,
+}: {
+  maxHeight?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("overflow-auto overscroll-contain", maxHeight)}>
+      {children}
     </div>
   );
 }
@@ -198,7 +290,12 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn('overflow-hidden rounded-xl border border-border bg-card', className)}>
+    <section
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-card",
+        className,
+      )}
+    >
       <div className="flex items-baseline justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-medium">{title}</h2>
         {note && <span className="text-xs text-muted-foreground">{note}</span>}
@@ -212,7 +309,13 @@ function Card({
  * Daily spend. One series, so no legend — the title names it. Hover gives the
  * exact figure rather than labelling every bar.
  */
-function DailySpend({ days, rate }: { days: UsageSummary['byDay']; rate: number }) {
+function DailySpend({
+  days,
+  rate,
+}: {
+  days: UsageSummary["byDay"];
+  rate: number;
+}) {
   const [hovered, setHovered] = useState<number | null>(null);
 
   if (days.length === 0) return null;
@@ -232,11 +335,13 @@ function DailySpend({ days, rate }: { days: UsageSummary['byDay']; rate: number 
             >
               <div
                 className={cn(
-                  'w-full rounded-t transition-colors',
-                  hovered === i ? 'bg-primary' : 'bg-primary/45',
+                  "w-full rounded-t transition-colors",
+                  hovered === i ? "bg-primary" : "bg-primary/45",
                 )}
                 // A day with spend always shows a sliver, so "small" never reads as "none".
-                style={{ height: `${Math.max(3, (day.costUsd / peak) * 100)}%` }}
+                style={{
+                  height: `${Math.max(3, (day.costUsd / peak) * 100)}%`,
+                }}
               />
             </div>
           ))}
