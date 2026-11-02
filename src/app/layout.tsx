@@ -7,8 +7,9 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Intervio — Go beyond the resume.',
-  description: 'A browser voice interviewer that checks whether you can defend your resume.',
+  title: 'Intervio — AI mock interviews about your real work',
+  description:
+    'Practise a real, spoken technical interview in your browser. Intervio asks about the work on your resume, follows up like a real interviewer, and tells you how ready you are.',
 };
 
 // Applied before paint to avoid a theme flash. Defaults to dark.

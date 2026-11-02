@@ -18,6 +18,10 @@
   --muted-foreground: #7f9cb5;
   --primary: #a9d3ff; /* one cool accent — used sparingly */
   --primary-foreground: #00111c; /* dark navy sits on the light-blue fill */
+  /* Landing call-to-action card: one saturated blue run, light → deep, never grey. */
+  --cta-a: #bfe0ff;
+  --cta-b: #8fc0f2;
+  --cta-c: #5b93d3;
   --ring: #a9d3ff;
 
   /* Semantic — also the claim-audit bands (supported / partial / insufficient). */
@@ -44,6 +48,9 @@
   --muted-foreground: #566a82;
   --primary: #103a63; /* deep navy-blue, echoing the dark-mode canvas */
   --primary-foreground: #ffffff;
+  --cta-a: #1d5a96;
+  --cta-b: #2d74bd;
+  --cta-c: #4a91d6;
   --ring: #103a63;
 
   --success: #12a150;
@@ -509,6 +516,61 @@ button:not(:disabled),
   display: none;
 }
 
+/* ── Landing hero: a printed resume, marked up by the interviewer ── */
+.resume-serif {
+  font-family: 'Iowan Old Style', 'Charter', 'Georgia', 'Times New Roman', serif;
+}
+/* A highlighter stroke on the lower part of the line, in the brand accent. */
+.annotated-resume .marker {
+  background-image: linear-gradient(
+    transparent 34%,
+    color-mix(in oklab, var(--primary) 34%, transparent) 34%,
+    color-mix(in oklab, var(--primary) 34%, transparent) 94%,
+    transparent 94%
+  );
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.annotated-resume .margin-note {
+  opacity: 0;
+}
+.annotated-resume .pen-stroke {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+}
+@keyframes marker-sweep {
+  to {
+    background-size: 100% 100%;
+  }
+}
+@keyframes note-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pen-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* Nothing plays until the figure is on screen (data-run is set then). */
+.annotated-resume[data-run] .marker {
+  animation: marker-sweep 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+.annotated-resume[data-run] .margin-note {
+  animation: note-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.annotated-resume[data-run] .pen-stroke {
+  animation: pen-draw 420ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
 /* "Interview has ended": the badge pops in, then the tick draws itself left → right. */
 @keyframes check-badge {
   from {
@@ -540,6 +602,18 @@ button:not(:disabled),
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .annotated-resume .marker {
+    background-size: 100% 100%;
+    animation: none !important;
+  }
+  .annotated-resume .margin-note {
+    opacity: 1;
+    animation: none !important;
+  }
+  .annotated-resume .pen-stroke {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
   .check-badge {
     animation: none;
   }
