@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     'Practise a real, spoken technical interview in your browser. Intervio asks about the work on your resume, follows up like a real interviewer, and tells you how ready you are.',
 };
 
-// Applied before paint to avoid a theme flash. Defaults to dark.
-const THEME_INIT = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}`;
+// Applied before paint to avoid a theme flash. Defaults to light.
+const THEME_INIT = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'light';}catch(e){document.documentElement.dataset.theme='light';}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
