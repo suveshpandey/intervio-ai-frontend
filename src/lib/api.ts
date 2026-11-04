@@ -1,3 +1,5 @@
+import { getFingerprint } from '@/lib/fingerprint';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export class ApiError extends Error {
@@ -13,10 +15,16 @@ export class ApiError extends Error {
 async function request<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
   // Let the browser set multipart boundaries; only JSON bodies get an explicit type.
   const isForm = init.body instanceof FormData;
+  // Lets the daily quotas tell browsers apart (backend common/device.ts).
+  const fingerprint = await getFingerprint();
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
     credentials: 'include',
-    headers: { ...(isForm ? {} : { 'Content-Type': 'application/json' }), ...init.headers },
+    headers: {
+      ...(isForm ? {} : { 'Content-Type': 'application/json' }),
+      ...(fingerprint ? { 'X-Intervio-Fp': fingerprint } : {}),
+      ...init.headers,
+    },
   });
 
   // Access token expired → try a single silent refresh, then replay the request.
