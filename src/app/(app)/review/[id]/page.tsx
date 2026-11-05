@@ -1,200 +1,116 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
 import { BlueprintPreview } from '@/components/blueprint-preview';
-import { PageHeader } from '@/components/app/page-header';
-import { ChevronRightIcon } from '@/components/icons';
+import { PageLoader } from '@/components/ui/page-loader';
 import { useResume } from '@/lib/resumes';
 import { useCreateBlueprint } from '@/lib/blueprints';
-import { useVoices } from '@/lib/voices';
-import { VoicePicker } from '@/components/voice-picker';
 import { useStartInterview, useInterviews } from '@/lib/interviews';
 import { ApiError } from '@/lib/api';
-import type { BlueprintWithClaims, Difficulty, Level } from '@/lib/contracts';
+import type { BlueprintWithClaims } from '@/lib/contracts';
 
-const LEVELS: Level[] = ['junior', 'mid', 'senior'];
-const DIFFICULTIES: Difficulty[] = ['easy', 'standard', 'hard'];
-
-export default function ReviewPage() {
+/**
+ * "What we'll cover": an optional look at the plan before starting. The plan is
+ * built from the resume's saved target (change it on the resume page), so
+ * there is nothing to fill in here.
+ */
+export default function PlanPreviewPage() {
   const resumeId = useParams<{ id: string }>().id;
-  const jdId = useSearchParams().get('jd') ?? undefined;
-
-  const resume = useResume(resumeId);
   const router = useRouter();
+  const resume = useResume(resumeId);
   const create = useCreateBlueprint();
-  const startInterview = useStartInterview();
-  const voices = useVoices();
-  const [result, setResult] = useState<BlueprintWithClaims | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  /** Set when the server refuses because another interview is still running. */
-  const [runningId, setRunningId] = useState<string | null>(null);
+  const start = useStartInterview();
   const interviews = useInterviews();
 
-  // Smart defaults, seeded from the resume once it loads.
-  const suggestedRole = resume.data?.resume.extracted?.experience?.[0]?.role ?? '';
-  const [role, setRole] = useState('');
-  const [level, setLevel] = useState<Level>('mid');
-  const [difficulty, setDifficulty] = useState<Difficulty>('standard');
-  const [durationMin, setDurationMin] = useState(15);
-  const [voice, setVoice] = useState<string>('');
+  const [plan, setPlan] = useState<BlueprintWithClaims | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [runningId, setRunningId] = useState<string | null>(null);
+  const requested = useRef(false);
 
-  async function onGenerate() {
+  const target = resume.data?.resume.targets[0];
+  useEffect(() => {
+    if (!target || requested.current) return;
+    requested.current = true;
+    create
+      .mutateAsync({ resumeId, ...target })
+      .then(setPlan)
+      .catch((err: unknown) =>
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : 'Could not build the plan. Try again.',
+        ),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, resumeId]);
+
+  async function onStart() {
+    if (!plan) return;
     setError(null);
+    setRunningId(null);
     try {
-      const res = await create.mutateAsync({
-        resumeId,
-        jdId,
-        role: (role || suggestedRole || 'Software Engineer').trim(),
-        level,
-        difficulty,
-        durationMin,
-        voice: voice || voices.data?.defaultVoice,
-      });
-      setResult(res);
+      const res = await start.mutateAsync({ blueprintId: plan.blueprint.id });
+      router.push(`/interview/${res.interviewId}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Could not build the plan. Try again.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Could not start the interview.',
+      );
+      // Only one interview may run at a time — point them at the one that is.
+      if (err instanceof ApiError && err.code === 'interview_in_progress') {
+        const fresh = await interviews.refetch();
+        setRunningId(
+          fresh.data?.interviews.find((i) => i.status === 'live')?.id ?? null,
+        );
+      }
     }
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      {result ? (
+      {!plan && !error && <PageLoader label="Putting the plan together…" />}
+
+      {plan && (
         <>
-          <BlueprintPreview data={result} />
-          <div className="mt-10 flex items-center gap-3 border-t border-border pt-8">
-            <Button
-              onClick={async () => {
-                setError(null);
-                setRunningId(null);
-                try {
-                  const res = await startInterview.mutateAsync(result.blueprint.id);
-                  router.push(`/interview/${res.interviewId}`);
-                } catch (err) {
-                  setError(err instanceof ApiError ? err.message : 'Could not start the interview.');
-                  // Only one interview may run at a time — point them at the one that is.
-                  if (err instanceof ApiError && err.code === 'interview_in_progress') {
-                    const fresh = await interviews.refetch();
-                    setRunningId(fresh.data?.interviews.find((i) => i.status === 'live')?.id ?? null);
-                  }
-                }
-              }}
-              disabled={startInterview.isPending}
-            >
-              {startInterview.isPending ? 'Starting…' : 'Start interview'}
+          <BlueprintPreview data={plan} />
+          <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-border pt-8">
+            <Button onClick={onStart} loading={start.isPending}>
+              {start.isPending ? 'Starting…' : 'Start interview'}
             </Button>
-            <span className="text-sm text-muted-foreground">The interviewer speaks — turn your sound on</span>
-            <Link href={`/resumes/${result.blueprint.resumeId}`} className="ml-auto">
-              <Button variant="ghost">Back to resume</Button>
+            <span className="text-sm text-muted-foreground">
+              The interviewer speaks — turn your sound on
+            </span>
+            <Link href={`/resumes/${resumeId}`} className="ml-auto">
+              <Button variant="ghost">Change setup</Button>
             </Link>
           </div>
-
-          {error && (
-            <p className="mt-4 text-sm text-destructive">
-              {error}{' '}
-              {runningId && (
-                <Link href={`/interview/${runningId}`} className="underline underline-offset-2">
-                  Go to it
-                </Link>
-              )}
-            </p>
-          )}
-        </>
-      ) : (
-        <>
-          <PageHeader
-            breadcrumb={
-              <>
-                <Link href="/dashboard" className="transition-colors hover:text-foreground">
-                  Dashboard
-                </Link>
-                <ChevronRightIcon className="h-3.5 w-3.5" />
-                <Link
-                  href={`/resumes/${resumeId}`}
-                  className="transition-colors hover:text-foreground"
-                >
-                  Resume
-                </Link>
-                <ChevronRightIcon className="h-3.5 w-3.5" />
-                <span className="text-foreground">Set up</span>
-              </>
-            }
-            title="Set up the interview"
-            description="We've pre-filled sensible defaults from your resume. Tweak anything, then generate the plan."
-          />
-
-          <div className="space-y-5">
-              <Field label="Target role">
-                <Input
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  placeholder={suggestedRole || 'e.g. Full-Stack Engineer'}
-                />
-              </Field>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-                <Field label="Level">
-                  <Select value={level} onChange={(e) => setLevel(e.target.value as Level)}>
-                    {LEVELS.map((l) => (
-                      <option key={l} value={l}>
-                        {l[0].toUpperCase() + l.slice(1)}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Difficulty">
-                  <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value as Difficulty)}>
-                    {DIFFICULTIES.map((d) => (
-                      <option key={d} value={d}>
-                        {d[0].toUpperCase() + d.slice(1)}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Duration">
-                  <Select value={durationMin} onChange={(e) => setDurationMin(Number(e.target.value))}>
-                    {[10, 15, 20, 30].map((m) => (
-                      <option key={m} value={m}>
-                        {m} min
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              </div>
-
-              <Field label="Interviewer voice">
-                {voices.data ? (
-                  <VoicePicker
-                    voices={voices.data.voices}
-                    value={voice || voices.data.defaultVoice}
-                    onChange={setVoice}
-                  />
-                ) : (
-                  <p className="text-sm text-muted-foreground">Loading voices…</p>
-                )}
-              </Field>
-            </div>
-
-            {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
-
-          <Button onClick={onGenerate} loading={create.isPending} className="mt-8 w-full sm:w-auto">
-            {create.isPending ? 'Building your plan…' : 'Generate interview plan'}
-          </Button>
         </>
       )}
-    </div>
-  );
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium">{label}</span>
-      {children}
-    </label>
+      {error && (
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-destructive">
+            {error}{' '}
+            {runningId && (
+              <Link
+                href={`/interview/${runningId}`}
+                className="underline underline-offset-2"
+              >
+                Go to it
+              </Link>
+            )}
+          </p>
+          {!plan && (
+            <Link href={`/resumes/${resumeId}`}>
+              <Button variant="outline">Back to resume</Button>
+            </Link>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

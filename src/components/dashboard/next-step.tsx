@@ -48,9 +48,9 @@ function pick(interviews: InterviewSummary[], resumes: Resume[]): Step {
       title: latest ? 'Go again, a level up' : 'Take your first interview',
       body: latest
         ? 'Everything held up last time. Try a harder interview to find the edges.'
-        : 'Your resume is ready. Check the plan, pick a voice and start talking.',
+        : 'Your resume is ready. Your target is saved once, so starting is one click.',
       href: `/resumes/${ready.id}`,
-      cta: latest ? 'Set up an interview' : 'Set up your interview',
+      cta: latest ? 'Start an interview' : 'Start your first interview',
     };
   }
 

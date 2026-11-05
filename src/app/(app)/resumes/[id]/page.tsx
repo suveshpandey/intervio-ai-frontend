@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/ui/page-loader';
+import { InterviewSetup } from '@/components/interview-setup';
 import { ChevronRightIcon } from '@/components/icons';
 import { useResume, useJd } from '@/lib/resumes';
 import type { Claim, ExtractedResume, ProjectItem } from '@/lib/contracts';
@@ -46,6 +47,8 @@ export default function ResumeResultPage() {
                 )}
               </div>
 
+              <InterviewSetup resumeId={resume.id} saved={resume.targets} jdId={jdId ?? undefined} />
+
               {jd.data && jd.data.jd.requiredSkills.length > 0 && (
                 <Section title="Target role — required skills">
                   <ChipList items={jd.data.jd.requiredSkills} />
@@ -56,14 +59,6 @@ export default function ResumeResultPage() {
 
               {extracted && <ExtractionSections extracted={extracted} />}
 
-              <div className="flex items-center gap-3 border-t border-border pt-8">
-                <Link href={`/review/${resume.id}${jdId ? `?jd=${jdId}` : ''}`}>
-                  <Button>Set up interview</Button>
-                </Link>
-                <Link href="/new">
-                  <Button variant="outline">Analyze another</Button>
-                </Link>
-              </div>
             </div>
           );
         })()}

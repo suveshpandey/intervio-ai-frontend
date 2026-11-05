@@ -62,7 +62,18 @@ export interface Resume {
   parseStatus: ParseStatus;
   parseError: string | null;
   extracted: ExtractedResume | null;
+  /** Interview targets saved for this resume, one per role, most recently used first. */
+  targets: InterviewTarget[];
   createdAt: string;
+}
+
+export interface InterviewTarget {
+  role: string;
+  level: Level;
+  difficulty: Difficulty;
+  durationMin: number;
+  voice: string;
+  jdId?: string;
 }
 
 export interface ResumeDetail {
@@ -230,6 +241,8 @@ export interface Report {
   claimAudit: ClaimAuditEntry[];
   readiness: { verdict: Verdict; reasons: string[]; gaps: string[] };
   improvements: { title: string; detail: string }[];
+  /** The interview before this one on the same resume, for "up from …". */
+  previous?: { verdict: Verdict; claimsSupported: number; claimsProbed: number; createdAt: string } | null;
 }
 
 // ── Admin usage + spend ──

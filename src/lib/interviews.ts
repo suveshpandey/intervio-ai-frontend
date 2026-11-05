@@ -4,9 +4,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { InterviewSummary, InterviewTranscript, Report, TurnResult } from '@/lib/contracts';
 
+/** Start from a plan already built (blueprintId) or straight from a resume's saved target. */
 export function useStartInterview() {
   return useMutation({
-    mutationFn: (blueprintId: string) => api.post<TurnResult>('/interviews', { blueprintId }),
+    mutationFn: (input: { blueprintId: string } | { resumeId: string }) =>
+      api.post<TurnResult>('/interviews', input),
   });
 }
 
