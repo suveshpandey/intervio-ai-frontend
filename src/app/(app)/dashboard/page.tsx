@@ -8,9 +8,11 @@ import { ArrowRightIcon } from '@/components/icons';
 import { useSession } from '@/lib/auth';
 import { useResumes } from '@/lib/resumes';
 import { useInterviews } from '@/lib/interviews';
-import { ResumeRow, InterviewRow } from '@/components/app/rows';
 import { GettingStarted } from '@/components/app/getting-started';
-import type { InterviewSummary } from '@/lib/contracts';
+import { StandingCard } from '@/components/dashboard/standing-card';
+import { NextStep } from '@/components/dashboard/next-step';
+import { InterviewList } from '@/components/dashboard/interview-list';
+import { ResumeShelf } from '@/components/dashboard/resume-shelf';
 
 export default function DashboardPage() {
   const { user } = useSession();
@@ -22,10 +24,6 @@ export default function DashboardPage() {
 
   const loading = resumes.isLoading || interviews.isLoading;
   const hasAnything = items.length > 0;
-  const live = runs.find((r) => r.status === 'live');
-  const reported = runs.filter((r) => r.claims !== null);
-  const backed = reported.reduce((n, r) => n + (r.claims?.claimsSupported ?? 0), 0);
-  const probed = reported.reduce((n, r) => n + (r.claims?.claimsProbed ?? 0), 0);
 
   return (
     <>
@@ -43,140 +41,25 @@ export default function DashboardPage() {
 
       <Spotlight />
 
-      {live && <LiveInterviewCard interview={live} />}
-
       {!loading && <GettingStarted resumes={items} interviews={runs} />}
 
-      {!loading && hasAnything && (
-        <Stats
-          resumes={items.length}
-          interviews={runs.filter((r) => r.status !== 'live').length}
-          backed={backed}
-          probed={probed}
-        />
-      )}
-
       {loading ? (
-        <RecentSkeleton />
-      ) : !hasAnything ? null : (
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          <Panel title="Resumes" actionLabel="Analyze another" actionHref="/new">
-            <ul className="max-h-[21rem] overflow-y-auto">
-              {items.map((r) => (
-                <ResumeRow key={r.id} resume={r} />
-              ))}
-            </ul>
-          </Panel>
+        <DashboardSkeleton />
+      ) : (
+        hasAnything && (
+          <>
+            {/* What it all adds up to, and what to do about it. */}
+            <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              <StandingCard interviews={runs} />
+              <NextStep interviews={runs} resumes={items} />
+            </div>
 
-          <Panel title="Interviews">
-            {runs.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-                No interviews yet. Open a ready resume to set one up.
-              </p>
-            ) : (
-              <ul className="max-h-[21rem] overflow-y-auto">
-                {runs.map((r) => (
-                  <InterviewRow key={r.id} interview={r} />
-                ))}
-              </ul>
-            )}
-          </Panel>
-        </div>
+            <ResumeShelf resumes={items} />
+            <InterviewList interviews={runs} />
+          </>
+        )
       )}
     </>
-  );
-}
-
-/* ── Panels ── */
-
-function Panel({
-  title,
-  actionLabel,
-  actionHref,
-  children,
-}: {
-  title: string;
-  actionLabel?: string;
-  actionHref?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section>
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-medium text-muted-foreground">{title}</h2>
-        {actionLabel && actionHref && (
-          <Link
-            href={actionHref}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {actionLabel}
-          </Link>
-        )}
-      </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-card">{children}</div>
-    </section>
-  );
-}
-
-/* ── An interview still running: the one thing worth interrupting for ── */
-
-function LiveInterviewCard({ interview }: { interview: InterviewSummary }) {
-  return (
-    <Link
-      href={`/interview/${interview.id}`}
-      className="mt-6 flex items-center gap-4 rounded-xl border border-primary/40 bg-primary/5 px-5 py-4 transition-colors hover:bg-primary/10"
-    >
-      <span className="live-dot h-2 w-2 shrink-0 rounded-full bg-success" aria-hidden />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">Interview in progress</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {interview.role} · the clock is running
-        </p>
-      </div>
-      <span className="shrink-0 text-sm text-primary">Continue</span>
-      <ArrowRightIcon className="h-4 w-4 shrink-0 text-primary" />
-    </Link>
-  );
-}
-
-/* ── Interview row ── */
-
-/* ── Analytics (sharp, hairline-divided strip) ── */
-
-function Stats({
-  resumes,
-  interviews,
-  backed,
-  probed,
-}: {
-  resumes: number;
-  interviews: number;
-  backed: number;
-  probed: number;
-}) {
-  return (
-    <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card">
-      <StatCell label="Resumes" value={resumes} />
-      <StatCell label="Interviews" value={interviews} />
-      {/* The number the product exists for. */}
-      <StatCell
-        label="Claims backed up"
-        value={probed ? `${backed}/${probed}` : '—'}
-        dot={probed ? 'bg-success' : undefined}
-      />
-    </div>
-  );
-}
-
-function StatCell({ label, value, dot }: { label: string; value: number | string; dot?: string }) {
-  return (
-    <div className="px-5 py-4">
-      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-        {dot && <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />}
-        {label}
-      </div>
-      <div className="mt-1.5 text-2xl font-semibold tabular-nums">{value}</div>
-    </div>
   );
 }
 
@@ -233,35 +116,28 @@ function Waves() {
   );
 }
 
-/* ── Resume row (clean list) ── */
+/* ── Loading ── */
 
-function RecentSkeleton() {
+function DashboardSkeleton() {
   return (
     <>
-      <div className="-mt-4 mb-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-xl border border-border bg-card">
+      <div className="mt-6 grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <Skeleton className="h-44 rounded-2xl" />
+        <Skeleton className="h-44 rounded-2xl" />
+      </div>
+      <Skeleton className="mb-3 mt-10 h-4 w-24" />
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
         {Array.from({ length: 3 }, (_, i) => (
-          <div key={i} className="px-5 py-4">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="mt-2.5 h-6 w-8" />
+          <div key={i} className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0">
+            <Skeleton className="h-9 w-10 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-4 w-20" />
           </div>
         ))}
       </div>
-      <Skeleton className="mb-3 h-4 w-20" />
-      <ul className="overflow-hidden rounded-xl border border-border bg-card">
-        {Array.from({ length: 3 }, (_, i) => (
-          <li key={i} className="flex items-center gap-3 border-b border-border px-4 py-3.5 last:border-0">
-            <Skeleton className="h-9 w-9 rounded-lg" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-44" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </li>
-        ))}
-      </ul>
     </>
   );
 }
-
-/* ── Empty (has spotlight above; keep this quiet) ── */
-

@@ -7,12 +7,13 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Intervio — Go beyond the resume.',
-  description: 'A browser voice interviewer that checks whether you can defend your resume.',
+  title: 'Intervio — AI mock interviews about your real work',
+  description:
+    'Practise a real, spoken technical interview in your browser. Intervio asks about the work on your resume, follows up like a real interviewer, and tells you how ready you are.',
 };
 
-// Applied before paint to avoid a theme flash. Defaults to dark.
-const THEME_INIT = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark';}catch(e){document.documentElement.dataset.theme='dark';}`;
+// Applied before paint to avoid a theme flash. Defaults to light.
+const THEME_INIT = `try{var t=localStorage.getItem('theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'light';}catch(e){document.documentElement.dataset.theme='light';}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

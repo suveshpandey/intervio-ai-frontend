@@ -7,7 +7,7 @@ type Theme = 'dark' | 'light';
 
 /** Toggles the app theme (data-theme on <html>) and persists it to localStorage. */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
 
   // Sync from what the pre-paint init script already applied.
   useEffect(() => {

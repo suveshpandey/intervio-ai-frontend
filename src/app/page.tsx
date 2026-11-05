@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LiveDemo } from '@/components/landing/live-demo';
+import { AnnotatedResume } from '@/components/landing/annotated-resume';
 import { ClaimExplorer } from '@/components/landing/claim-explorer';
 import { VoicePreview } from '@/components/landing/voice-preview';
 import { Reveal } from '@/components/landing/reveal';
+import { HowItWorks } from '@/components/landing/how-it-works';
+import { FeatureCards } from '@/components/landing/feature-cards';
 
 /* ------------------------------------------------------------------ */
 /* Icons (inline, stroke 1.5 — no icon dependency)                     */
@@ -12,99 +14,11 @@ import { Reveal } from '@/components/landing/reveal';
 
 type IconProps = { className?: string };
 
-function IconFile({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M14 3v4a1 1 0 0 0 1 1h4M15 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-4-5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function IconMic({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M19 11a7 7 0 0 1-14 0M12 18v3"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function IconReport({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M4 19V5M4 19h16M8 16v-4M12 16V8M16 16v-6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function IconShield({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6l-7-3Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m9.5 12 1.8 1.8L15 10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function IconBolt({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <path
-        d="M13 3 4 14h7l-1 7 9-11h-7l1-7Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
-function IconTarget({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="12" cy="12" r="1" fill="currentColor" />
-    </svg>
-  );
-}
 
 function IconArrow({ className }: IconProps) {
   return (
@@ -145,13 +59,6 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-function IconTile({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface text-primary">
-      {children}
-    </span>
-  );
-}
 
 
 /* ------------------------------------------------------------------ */
@@ -162,49 +69,7 @@ function IconTile({ children }: { children: React.ReactNode }) {
 /* Content                                                             */
 /* ------------------------------------------------------------------ */
 
-const STEPS = [
-  {
-    n: '01',
-    icon: IconFile,
-    title: 'Upload resume + JD',
-    body: 'Drop in a PDF or DOCX and the job description. Intervio extracts your skills, projects, and the specific claims worth defending.',
-  },
-  {
-    n: '02',
-    icon: IconMic,
-    title: 'Live voice interview',
-    body: 'A real spoken interview in your browser. It adapts in real time — probing vague answers, moving on when you’re solid, digging where it matters.',
-  },
-  {
-    n: '03',
-    icon: IconReport,
-    title: 'Honest readiness report',
-    body: 'Skill scores, a claim-by-claim audit backed by what you actually said, a readiness verdict, and the exact things to fix.',
-  },
-];
 
-const FEATURES = [
-  {
-    icon: IconTarget,
-    title: 'Claim verification',
-    body: 'Every line on your resume becomes a claim that needs evidence. We probe it, weigh what you say, and grade it supported, partial, or insufficient — with a confidence number.',
-  },
-  {
-    icon: IconBolt,
-    title: 'Adaptive interview engine',
-    body: 'A deterministic engine runs the interview — respecting time budgets, never repeating, easing off after two weak answers. The AI only evaluates and asks. Reliable, not a rambling chatbot.',
-  },
-  {
-    icon: IconMic,
-    title: 'Voice, in the browser',
-    body: 'Low-latency streaming speech in and out — no phone, no downloads, no setup. Live captions on both sides so you can follow every word.',
-  },
-  {
-    icon: IconShield,
-    title: 'Honest, defensible scoring',
-    body: 'Scores come from evidence your code computes, not a vibe. Every verdict cites the moment in the interview that earned it — no “lie detection,” just evidence.',
-  },
-];
 
 
 /* ------------------------------------------------------------------ */
@@ -266,25 +131,25 @@ export default function LandingPage() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Voice interviews for developers
+            AI mock interviews for developers
           </span>
 
           <h1 className="mt-6 text-balance text-5xl font-semibold leading-[1.04] tracking-tight sm:text-6xl">
-            <span className="text-gradient">Go beyond</span>
+            <span className="text-gradient">A real interview,</span>
             <br />
-            <span className="text-primary">the resume.</span>
+            <span className="text-primary">before the real one.</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            Intervio is a browser voice interviewer that checks whether you can actually defend
-            what&apos;s on your resume — then tells you how ready you are and exactly what to work
-            on.
+            Talk to an AI interviewer out loud, right in your browser. It asks about the work
+            you&apos;ve actually done, follows up when an answer is thin, and tells you exactly how
+            ready you are.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link href="/signup">
               <Button className="h-11 px-5 text-[15px]">
-                Start your interview
+                Start a mock interview
                 <IconArrow className="h-4 w-4" />
               </Button>
             </Link>
@@ -297,10 +162,10 @@ export default function LandingPage() {
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-xs text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="h-1 w-1 rounded-full bg-primary" /> Browser-only, no phone
+              <span className="h-1 w-1 rounded-full bg-primary" /> Spoken, not typed
             </span>
             <span className="flex items-center gap-2">
-              <span className="h-1 w-1 rounded-full bg-primary" /> Adaptive, claim-probing
+              <span className="h-1 w-1 rounded-full bg-primary" /> Real follow-up questions
             </span>
             <span className="flex items-center gap-2">
               <span className="h-1 w-1 rounded-full bg-primary" /> Built for devs 0–6 yrs
@@ -309,7 +174,7 @@ export default function LandingPage() {
         </div>
 
         <div className="lg:pl-4">
-          <LiveDemo />
+          <AnnotatedResume />
         </div>
       </section>
 
@@ -318,29 +183,15 @@ export default function LandingPage() {
         <div className="max-w-2xl">
           <Eyebrow>How it works</Eyebrow>
           <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
-            One loop, end to end.
+            From upload to a real interview in minutes.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From resume to readiness in a single session — no busywork, no generic question banks.
+            Your resume sets the questions. The interview is where you find out how you&apos;d really
+            do.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-3">
-          {STEPS.map(({ n, icon: Icon, title, body }, i) => (
-            <Reveal key={n} delay={i * 90} className="bg-card p-7">
-              <div className="flex items-center justify-between">
-                <IconTile>
-                  <Icon className="h-5 w-5" />
-                </IconTile>
-                <span className="font-mono text-2xl font-semibold text-muted-foreground/25">
-                  {n}
-                </span>
-              </div>
-              <h3 className="mt-6 text-lg font-medium">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-            </Reveal>
-          ))}
-        </div>
+        <HowItWorks />
       </section>
 
       {/* hear it */}
@@ -370,20 +221,21 @@ export default function LandingPage() {
           <div>
             <Eyebrow>Why it&apos;s different</Eyebrow>
             <h2 className="mt-5 text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Everyone else scores answers. We audit your{' '}
-              <span className="text-primary">claims.</span>
+              Most mock interviews ask generic questions.{' '}
+              <span className="text-primary">Ours asks about you.</span>
             </h2>
             <p className="mt-5 text-muted-foreground">
-              Intervio turns your resume into a set of claims that need evidence, then spends the
-              interview finding out which ones you can actually back up. The report is built around
-              what you proved — not how smooth you sounded.
+              Practice tools quiz you on textbook questions anyone can look up. A real interviewer
+              picks a line from your resume and says &ldquo;walk me through that.&rdquo; That&apos;s the
+              interview Intervio runs — and its feedback is built on what you actually said, not how
+              smooth you sounded.
             </p>
             <p className="mt-4 text-muted-foreground">
-              Safe language, always. Verdicts are{' '}
-              <span className="text-foreground">supported</span>,{' '}
-              <span className="text-foreground">partial</span>, or{' '}
-              <span className="text-foreground">insufficient evidence</span> — each with a
-              confidence number and the exact moment that earned it.
+              Fair feedback, never accusations. Each answer is judged{' '}
+              <span className="text-foreground">backed up</span>,{' '}
+              <span className="text-foreground">partly backed up</span>, or{' '}
+              <span className="text-foreground">not enough detail</span> — with the exact moment in
+              the interview that decided it.
             </p>
           </div>
 
@@ -396,47 +248,54 @@ export default function LandingPage() {
         <div className="max-w-2xl">
           <Eyebrow>Features</Eyebrow>
           <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Built to be honest, fast, and hard to fool.
+            Built to feel like the real interview.
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2">
-          {FEATURES.map(({ icon: Icon, title, body }, i) => (
-            <Reveal key={title} delay={i * 80} className="bg-card p-7">
-              <IconTile>
-                <Icon className="h-5 w-5" />
-              </IconTile>
-              <h3 className="mt-6 text-lg font-medium">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
-            </Reveal>
-          ))}
-        </div>
+        <FeatureCards />
       </section>
 
       {/* final CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-24">
-        <div className="edge-top relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-16 text-center sm:py-20">
+        {/*
+          The one loud surface on the page: a gradient in the brand accent, so it
+          inverts with the theme — light-blue on navy in dark mode, navy with white
+          text in light mode.
+        */}
+        <div
+          className="relative overflow-hidden rounded-3xl px-6 py-16 text-center text-primary-foreground sm:py-20"
+          style={{
+            background:
+              'linear-gradient(135deg, var(--cta-a) 0%, var(--cta-b) 52%, var(--cta-c) 100%)',
+          }}
+        >
+          {/* Soft light from the top, so the colour has depth. */}
           <div
-            className="pointer-events-none absolute inset-0 -z-10"
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
             style={{
               background:
-                'radial-gradient(55% 120% at 50% 0%, rgba(169,211,255,0.12), transparent 70%)',
+                'radial-gradient(55% 80% at 50% 0%, color-mix(in oklab, white 16%, transparent), transparent 70%)',
             }}
           />
-          <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Find out how ready you really are.
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-            Upload your resume, talk it through, and get an honest read on your readiness in one
-            sitting.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <Link href="/signup">
-              <Button className="h-11 px-6 text-[15px]">
-                Get started free
+
+          <div className="relative">
+            <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+              Walk into your next interview already prepared.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg opacity-80">
+              Upload your resume, take a 15-minute mock interview out loud, and get an honest report on
+              how ready you are.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Link
+                href="/signup"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-background px-6 text-[15px] font-medium text-foreground shadow-pop transition-transform hover:-translate-y-0.5"
+              >
+                Start a mock interview
                 <IconArrow className="h-4 w-4" />
-              </Button>
-            </Link>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -446,7 +305,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row">
           <div className="flex items-center gap-2.5">
             <Brand compact />
-            <span className="ml-1 text-sm text-muted-foreground">Go beyond the resume.</span>
+            <span className="ml-1 text-sm text-muted-foreground">Practise the interview, not just the resume.</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link href="/login" className="transition-colors hover:text-foreground">

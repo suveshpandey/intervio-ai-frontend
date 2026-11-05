@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useRequireAuth } from '@/lib/auth';
 import { PageLoader } from '@/components/ui/page-loader';
 import { MenuIcon } from '@/components/icons';
@@ -14,6 +15,7 @@ import { Container } from '@/components/app/container';
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useRequireAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const pathname = usePathname();
 
   if (isLoading || !user) {
     return <PageLoader fullscreen label="Loading…" />;
@@ -66,7 +68,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1">
-          <Container>{children}</Container>
+          {/* The dashboard is a grid of cards, so it gets more width than the reading pages. */}
+          <Container className={pathname === '/dashboard' ? 'max-w-[68rem]' : undefined}>{children}</Container>
         </main>
       </div>
     </div>

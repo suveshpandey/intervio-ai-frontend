@@ -81,7 +81,7 @@ export function ClaimExplorer() {
       {/* the resume lines */}
       <div className="border-b border-border p-2">
         <p className="px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground/70">
-          Pick a line from a resume
+          Pick a line — see how the interviewer probes it
         </p>
         <div className="flex flex-col gap-1">
           {EXAMPLES.map((item, i) => (

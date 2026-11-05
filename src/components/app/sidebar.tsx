@@ -84,7 +84,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
       <InterviewHistory pathname={pathname} onNavigate={onNavigate} />
 
-      <div className="mt-auto px-3 pt-6 font-mono text-[11px] text-muted-foreground/40">
+      <div className="mt-auto px-3 pt-3 font-mono text-[11px] text-muted-foreground/40">
         Intervio · MVP
       </div>
     </div>
@@ -115,7 +115,7 @@ function InterviewHistory({ pathname, onNavigate }: { pathname: string; onNaviga
   }
 
   return (
-    <nav className="-mr-1 max-h-[46vh] space-y-0.5 overflow-y-auto pr-1">
+    <nav className="-mr-1 min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
       {interviews.map((interview) => {
         const active = pathname === `/interviews/${interview.id}`;
         return (

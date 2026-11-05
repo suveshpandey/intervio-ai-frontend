@@ -234,7 +234,7 @@ export interface Report {
 
 // ── Admin usage + spend ──
 export interface UsageSummary {
-  currency: { usdToInr: number };
+  currency: { usdToInr: number; source: 'frankfurter' | 'open.er-api' | 'fallback'; fetchedAt: string };
   windowDays: number;
   totals: {
     allTimeUsd: number;
