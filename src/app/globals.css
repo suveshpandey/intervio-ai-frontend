@@ -370,6 +370,39 @@ button:not(:disabled),
   animation: pop-in 0.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/*
+  Initials in a circle. Letter-spacing would add a gap after the last letter (nudging
+  the text left) and a normal line box sits caps high, so trim the box to the caps
+  themselves and centre that. Browsers without text-box-trim fall back to leading-none.
+*/
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-box: trim-both cap alphabetic;
+}
+
+/* Account-menu chevron: while hovered it drifts down and back, fading as it goes. */
+@keyframes chevron-nudge {
+  0%,
+  100% {
+    transform: translateY(-1.5px);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(2.5px);
+    opacity: 1;
+  }
+}
+.group:hover .chevron-nudge,
+.group:focus-visible .chevron-nudge {
+  animation: chevron-nudge 1.1s ease-in-out infinite;
+}
+
 /* Terminal cursor blink. */
 @keyframes blink {
   0%,
@@ -387,7 +420,9 @@ button:not(:disabled),
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
-  .blink {
+  .blink,
+  .group:hover .chevron-nudge,
+  .group:focus-visible .chevron-nudge {
     animation: none;
   }
 }
@@ -626,6 +661,24 @@ button:not(:disabled),
   .live-dot,
   .caption-word,
   .thinking-dots::after {
+    animation: none;
+  }
+}
+
+/* One-off reveal: the cross is wiped in from left to right. */
+@keyframes cross-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.cross-reveal {
+  animation: cross-reveal 0.55s 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cross-reveal {
     animation: none;
   }
 }

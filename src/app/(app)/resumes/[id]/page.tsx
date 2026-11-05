@@ -101,26 +101,72 @@ function Analyzing({ name }: { name: string }) {
   );
 }
 
+const TIPS = [
+  'A PDF or DOCX, up to 5 MB',
+  'Real text, not a scan or a photo',
+  'Your experience, skills and projects',
+];
+
 function Failed({ error }: { error: string | null }) {
   // A file we couldn't read and a file that isn't a resume are different problems.
   const notAResume = error?.includes("doesn't look like a resume") ?? false;
   return (
-    <div className="grid min-h-[50vh] place-items-center text-center">
-      <div className="max-w-md space-y-4">
-        <p className="text-lg font-medium">
+    <div className="grid min-h-[60vh] place-items-center">
+      <div className="rise flex w-full max-w-sm flex-col items-center text-center">
+        <CrossMark />
+
+        <h1 className="mt-7 text-xl font-semibold tracking-tight">
           {notAResume
             ? "That doesn't look like a resume"
-            : "We couldn't read that resume"}
+            : "We couldn't read that file"}
+        </h1>
+        <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+          {notAResume
+            ? "We couldn't find the experience, skills or projects of a CV in it, so there's nothing to build an interview from."
+            : (error ?? 'The file may be scanned, image-only, or corrupted.')}
         </p>
-        <p className="text-sm text-muted-foreground">
-          {error ??
-            'The file may be scanned, image-only, or corrupted. Try a text-based PDF or DOCX.'}
-        </p>
-        <Link href="/new">
-          <Button>Try another file</Button>
+
+        <ul className="mt-7 w-full space-y-2.5 rounded-xl border border-border bg-card px-5 py-4 text-left">
+          <li className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            What works
+          </li>
+          {TIPS.map((tip) => (
+            <li key={tip} className="flex items-center gap-2.5 text-sm">
+              <span
+                aria-hidden
+                className="h-1 w-1 shrink-0 rounded-full"
+                style={{ background: 'var(--primary)' }}
+              />
+              {tip}
+            </li>
+          ))}
+        </ul>
+
+        <Link href="/new" className="mt-8">
+          <Button className="h-11 px-6">Try another file</Button>
         </Link>
       </div>
     </div>
+  );
+}
+
+/** A solid red disc; the cross is wiped in once, left to right. */
+function CrossMark() {
+  return (
+    <span
+      aria-hidden
+      className="grid h-16 w-16 place-items-center rounded-full"
+      style={{ background: 'var(--destructive)' }}
+    >
+      <svg viewBox="0 0 24 24" className="cross-reveal h-8 w-8" fill="none">
+        <path
+          d="M7 7l10 10M17 7 7 17"
+          stroke="#fff"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
   );
 }
 

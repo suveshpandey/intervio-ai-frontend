@@ -257,19 +257,32 @@ export interface UsageSummary {
     interviews: number;
     perInterviewUsd: number;
   };
-  byModel: {
+  /** Spend split by who we pay: euri (LLM) and deepgram (voice). */
+  providers: {
     provider: string;
-    model: string;
-    calls: number;
-    inputTokens: number;
-    outputTokens: number;
-    units: number;
-    costUsd: number;
-    /** We are guessing this model's rate. */
-    estimated: boolean;
+    today: { usd: number; calls: number };
+    week: { usd: number; calls: number };
+    /** The last `windowDays` days. */
+    window: { usd: number; calls: number };
+    allTime: { usd: number; calls: number };
+    /** Share of all spend in the window, 0–1. */
+    share: number;
+    /** Raw volume in the window. Seconds of audio for STT, characters for TTS. */
+    volume: { inputTokens: number; outputTokens: number; sttSeconds: number; ttsChars: number };
+    models: {
+      kind: string;
+      model: string;
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      units: number;
+      costUsd: number;
+      /** We are guessing this model's rate. */
+      estimated: boolean;
+    }[];
+    tasks: { kind: string; task: string; calls: number; costUsd: number }[];
   }[];
-  byTask: { kind: string; task: string; calls: number; costUsd: number }[];
-  byDay: { day: string; costUsd: number; calls: number }[];
+  byDay: { day: string; costUsd: number; calls: number; byProvider: Record<string, number> }[];
   topUsers: { userId: string | null; email: string; costUsd: number; calls: number }[];
   turnLatencyMs: { p50: number; p95: number; max: number };
 }
