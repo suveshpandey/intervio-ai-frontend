@@ -137,8 +137,8 @@ export function InterviewSetup({
             {target().role} · {cap(level)} · {durationMin} min
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Saved for this resume, so every interview is one click. We pick the
-            claims worth checking.
+            Remembered per role, so every interview is one click. Switch role
+            any time; we pick the claims worth checking.
           </p>
         </div>
         <button
@@ -212,7 +212,7 @@ export function InterviewSetup({
               </Select>
             </Field>
           </div>
-          <Field label="Interviewer voice">
+          <Field label="Interviewer voice" group>
             {voices.data ? (
               <VoicePicker
                 voices={voices.data.voices}
@@ -259,18 +259,26 @@ export function InterviewSetup({
   );
 }
 
+/**
+ * A labelled field. `group` renders a div instead of a <label>: a <label> forwards
+ * every click inside it to its first button, which for the voice picker meant
+ * choosing one voice pressed the first voice's Preview.
+ */
 function Field({
   label,
   children,
+  group = false,
 }: {
   label: string;
   children: React.ReactNode;
+  group?: boolean;
 }) {
+  const Tag = group ? 'div' : 'label';
   return (
-    <label className="block">
+    <Tag className="block">
       <span className="mb-2 block text-sm font-medium">{label}</span>
       {children}
-    </label>
+    </Tag>
   );
 }
 

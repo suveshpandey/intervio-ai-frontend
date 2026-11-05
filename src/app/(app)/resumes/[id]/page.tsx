@@ -20,14 +20,17 @@ export default function ResumeResultPage() {
   return (
     <div className="mx-auto max-w-3xl">
       {isLoading && <PageLoader label="Loading resume…" />}
-      {error && <StateNote tone="error">Couldn&apos;t load this resume.</StateNote>}
+      {error && (
+        <StateNote tone="error">Couldn&apos;t load this resume.</StateNote>
+      )}
 
       {data &&
         (() => {
           const { resume, claims } = data;
           const status = resume.parseStatus;
 
-          if (status === 'pending' || status === 'processing') return <Analyzing name={resume.fileName} />;
+          if (status === 'pending' || status === 'processing')
+            return <Analyzing name={resume.fileName} />;
           if (status === 'failed') return <Failed error={resume.parseError} />;
 
           const extracted = resume.extracted;
@@ -35,19 +38,33 @@ export default function ResumeResultPage() {
             <div className="space-y-12">
               <div>
                 <div className="mb-3 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-                  <Link href="/dashboard" className="transition-colors hover:text-foreground">
+                  <Link
+                    href="/dashboard"
+                    className="transition-colors hover:text-foreground"
+                  >
                     Dashboard
                   </Link>
                   <ChevronRightIcon className="h-3.5 w-3.5" />
-                  <span className="truncate text-foreground">{resume.fileName}</span>
+                  <span className="truncate text-foreground">
+                    {resume.fileName}
+                  </span>
                 </div>
-                <h1 className="text-2xl font-semibold tracking-tight">Here&apos;s what we found</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">
+                  Here&apos;s what we found
+                </h1>
                 {extracted?.summary && (
-                  <p className="mt-3 max-w-2xl text-muted-foreground">{extracted.summary}</p>
+                  <p className="mt-3 max-w-2xl text-muted-foreground">
+                    {extracted.summary}
+                  </p>
                 )}
               </div>
 
-              <InterviewSetup resumeId={resume.id} saved={resume.targets} jdId={jdId ?? undefined} />
+              <InterviewSetup
+                key={resume.targets.map((t) => t.role).join('|')}
+                resumeId={resume.id}
+                saved={resume.targets}
+                jdId={jdId ?? undefined}
+              />
 
               {jd.data && jd.data.jd.requiredSkills.length > 0 && (
                 <Section title="Target role — required skills">
@@ -58,7 +75,6 @@ export default function ResumeResultPage() {
               <ClaimsSection claims={claims} />
 
               {extracted && <ExtractionSections extracted={extracted} />}
-
             </div>
           );
         })()}
@@ -75,7 +91,8 @@ function Analyzing({ name }: { name: string }) {
         <div>
           <p className="font-medium">Analyzing {name}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Reading your resume and extracting claims — this takes a few seconds.
+            Reading your resume and extracting claims — this takes a few
+            seconds.
           </p>
         </div>
         <span className="dash-line" aria-hidden />
@@ -91,10 +108,13 @@ function Failed({ error }: { error: string | null }) {
     <div className="grid min-h-[50vh] place-items-center text-center">
       <div className="max-w-md space-y-4">
         <p className="text-lg font-medium">
-          {notAResume ? "That doesn't look like a resume" : "We couldn't read that resume"}
+          {notAResume
+            ? "That doesn't look like a resume"
+            : "We couldn't read that resume"}
         </p>
         <p className="text-sm text-muted-foreground">
-          {error ?? 'The file may be scanned, image-only, or corrupted. Try a text-based PDF or DOCX.'}
+          {error ??
+            'The file may be scanned, image-only, or corrupted. Try a text-based PDF or DOCX.'}
         </p>
         <Link href="/new">
           <Button>Try another file</Button>
@@ -104,9 +124,21 @@ function Failed({ error }: { error: string | null }) {
   );
 }
 
-function StateNote({ children, tone }: { children: React.ReactNode; tone?: 'error' }) {
+function StateNote({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone?: 'error';
+}) {
   return (
-    <p className={tone === 'error' ? 'text-destructive' : 'text-muted-foreground'}>{children}</p>
+    <p
+      className={
+        tone === 'error' ? 'text-destructive' : 'text-muted-foreground'
+      }
+    >
+      {children}
+    </p>
   );
 }
 
@@ -116,29 +148,42 @@ function ClaimsSection({ claims }: { claims: Claim[] }) {
   if (claims.length === 0) {
     return (
       <Section title="Claims to defend">
-        <p className="text-sm text-muted-foreground">No strong claims found. Try a more detailed resume.</p>
+        <p className="text-sm text-muted-foreground">
+          No strong claims found. Try a more detailed resume.
+        </p>
       </Section>
     );
   }
   return (
     <section>
       <div className="flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Claims to defend</h2>
-        <span className="text-sm text-muted-foreground">{claims.length} found</span>
+        <h2 className="text-lg font-semibold tracking-tight">
+          Claims to defend
+        </h2>
+        <span className="text-sm text-muted-foreground">
+          {claims.length} found
+        </span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        &ldquo;Go beyond the resume.&rdquo; These are what the interview will probe.
+        &ldquo;Go beyond the resume.&rdquo; These are what the interview will
+        probe.
       </p>
       <ul className="mt-5 space-y-3">
         {claims.map((c) => (
-          <li key={c.id} className="rounded-[var(--radius)] border border-border bg-card p-4">
+          <li
+            key={c.id}
+            className="rounded-[var(--radius)] border border-border bg-card p-4"
+          >
             <p className="text-card-foreground">{c.text}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge tone="muted">{c.category}</Badge>
               {c.relatedSkills.slice(0, 4).map((s) => (
                 <Badge key={s}>{s}</Badge>
               ))}
-              <span className="ml-auto flex items-center gap-1" title={`Priority ${c.priority}/5`}>
+              <span
+                className="ml-auto flex items-center gap-1"
+                title={`Priority ${c.priority}/5`}
+              >
                 <Dots value={c.priority} />
               </span>
             </div>
@@ -183,7 +228,9 @@ function ExtractionSections({ extracted }: { extracted: ExtractedResume }) {
                 <p className="font-medium">
                   {[e.role, e.company].filter(Boolean).join(' · ') || 'Role'}
                   {e.duration && (
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">{e.duration}</span>
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      {e.duration}
+                    </span>
                   )}
                 </p>
                 {e.highlights.length > 0 && (
@@ -232,7 +279,9 @@ function ProjectSections({ projects }: { projects: ProjectItem[] }) {
           <div className="space-y-6">
             {[...byOrg.entries()].map(([org, items]) => (
               <div key={org}>
-                <p className="mb-3 text-sm font-medium text-muted-foreground">at {org}</p>
+                <p className="mb-3 text-sm font-medium text-muted-foreground">
+                  at {org}
+                </p>
                 <div className="space-y-4">
                   {items.map((p, i) => (
                     <ProjectCard key={i} project={p} />
@@ -251,7 +300,11 @@ function ProjectCard({ project }: { project: ProjectItem }) {
   return (
     <div>
       <p className="font-medium">{project.name}</p>
-      {project.description && <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>}
+      {project.description && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          {project.description}
+        </p>
+      )}
       {project.tech.length > 0 && (
         <div className="mt-2">
           <ChipList items={project.tech} />
@@ -261,7 +314,13 @@ function ProjectCard({ project }: { project: ProjectItem }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section>
       <h2 className="mb-4 text-lg font-semibold tracking-tight">{title}</h2>
