@@ -68,9 +68,10 @@ export default function DashboardPage() {
 function Spotlight() {
   return (
     <section className="edge-top relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10">
+      {/* Top-right glow: light theme only — dark keeps the flat card. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 [[data-theme=dark]_&]:hidden"
         style={{
           background:
             'radial-gradient(70% 130% at 88% 0%, rgba(169,211,255,0.12), transparent 60%)',

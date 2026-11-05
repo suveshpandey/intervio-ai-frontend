@@ -259,7 +259,7 @@ export default function LandingPage() {
       <section className="mx-auto max-w-6xl px-5 pb-24">
         {/*
           The one loud surface on the page: a gradient in the brand accent, so it
-          inverts with the theme — light-blue on navy in dark mode, navy with white
+          inverts with the theme — blue on slate in dark mode, navy with white
           text in light mode.
         */}
         <div
