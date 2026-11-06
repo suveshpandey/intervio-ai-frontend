@@ -51,7 +51,6 @@ export function InterviewSetup({
   const [jd, setJd] = useState<string | undefined>(jdId ?? last.jdId);
   const [error, setError] = useState<string | null>(null);
   const [runningId, setRunningId] = useState<string | null>(null);
-  const [editing, setEditing] = useState(false);
 
   const target = (): InterviewTarget => ({
     role: role.trim() || last.role,
@@ -73,14 +72,12 @@ export function InterviewSetup({
     setDurationMin(t.durationMin);
     setVoice(t.voice);
     setJd(t.jdId);
-    setEditing(false);
   }
 
   /** A fresh role starts from the same settings with the role (and JD) cleared. */
   function newRole() {
     setRole('');
     setJd(undefined);
-    setEditing(true);
   }
 
   /** Save the target if it changed (or a JD came with the upload), then go. */
@@ -127,106 +124,90 @@ export function InterviewSetup({
   }
 
   return (
-    <section className="rounded-2xl border border-border bg-card p-6">
-      <div className="flex items-start justify-between gap-4">
+    <div>
+      <div className="space-y-6">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
-            Your interview
-          </p>
-          <p className="mt-2 text-lg font-medium tracking-tight">
-            {target().role} · {cap(level)} · {durationMin} min
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Remembered per role, so every interview is one click. Switch role
-            any time; we pick the claims worth checking.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="shrink-0 text-sm text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
-        >
-          {editing ? 'Done' : 'Edit'}
-        </button>
-      </div>
-
-      <div
-        className="mt-5 flex flex-wrap items-center gap-2"
-        role="group"
-        aria-label="Role to interview for"
-      >
-        {saved.map((t) => (
-          <Chip key={t.role} active={isSaved(t)} onClick={() => pickRole(t)}>
-            {t.role}
-          </Chip>
-        ))}
-        <Chip active={!saved.some(isSaved)} onClick={newRole}>
-          + New role
-        </Chip>
-      </div>
-
-      {editing && (
-        <div className="mt-5 space-y-5 border-t border-border pt-5">
-          <Field label="Target role">
-            <Input
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="e.g. Full-Stack Engineer"
-            />
-          </Field>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-            <Field label="Level">
-              <Select
-                value={level}
-                onChange={(e) => setLevel(e.target.value as Level)}
+          <p className="mb-2 text-sm font-medium">Role</p>
+          <div
+            className="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label="Role to interview for"
+          >
+            {saved.map((t) => (
+              <Chip
+                key={t.role}
+                active={isSaved(t)}
+                onClick={() => pickRole(t)}
               >
-                {LEVELS.map((l) => (
-                  <option key={l} value={l}>
-                    {cap(l)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Difficulty">
-              <Select
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-              >
-                {DIFFICULTIES.map((d) => (
-                  <option key={d} value={d}>
-                    {cap(d)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Duration">
-              <Select
-                value={durationMin}
-                onChange={(e) => setDurationMin(Number(e.target.value))}
-              >
-                {DURATIONS.map((m) => (
-                  <option key={m} value={m}>
-                    {m} min
-                  </option>
-                ))}
-              </Select>
-            </Field>
+                {t.role}
+              </Chip>
+            ))}
+            <Chip active={!saved.some(isSaved)} onClick={newRole}>
+              + New role
+            </Chip>
           </div>
-          <Field label="Interviewer voice" group>
-            {voices.data ? (
-              <VoicePicker
-                voices={voices.data.voices}
-                value={voice}
-                onChange={setVoice}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">Loading voices…</p>
-            )}
+          <Input
+            className="mt-3"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder="e.g. Full-Stack Engineer"
+            aria-label="Target role"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <Field label="Level">
+            <Select
+              value={level}
+              onChange={(e) => setLevel(e.target.value as Level)}
+            >
+              {LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {cap(l)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Difficulty">
+            <Select
+              value={difficulty}
+              onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+            >
+              {DIFFICULTIES.map((d) => (
+                <option key={d} value={d}>
+                  {cap(d)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Duration">
+            <Select
+              value={durationMin}
+              onChange={(e) => setDurationMin(Number(e.target.value))}
+            >
+              {DURATIONS.map((m) => (
+                <option key={m} value={m}>
+                  {m} min
+                </option>
+              ))}
+            </Select>
           </Field>
         </div>
-      )}
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+        <Field label="Interviewer voice" group>
+          {voices.data ? (
+            <VoicePicker
+              voices={voices.data.voices}
+              value={voice}
+              onChange={setVoice}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Loading voices…</p>
+          )}
+        </Field>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border pt-6">
         <Button onClick={onStart} loading={start.isPending || save.isPending}>
           {start.isPending ? 'Starting…' : 'Start interview'}
         </Button>
@@ -255,7 +236,7 @@ export function InterviewSetup({
           )}
         </p>
       )}
-    </section>
+    </div>
   );
 }
 

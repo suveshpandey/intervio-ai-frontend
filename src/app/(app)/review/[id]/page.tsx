@@ -84,7 +84,7 @@ export default function PlanPreviewPage() {
             <span className="text-sm text-muted-foreground">
               The interviewer speaks — turn your sound on
             </span>
-            <Link href={`/resumes/${resumeId}`} className="ml-auto">
+            <Link href={`/resumes/${resumeId}/setup`} className="ml-auto">
               <Button variant="ghost">Change setup</Button>
             </Link>
           </div>

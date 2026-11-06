@@ -1,11 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/ui/page-loader';
-import { InterviewSetup } from '@/components/interview-setup';
 import { ChevronRightIcon } from '@/components/icons';
 import { useResume, useJd } from '@/lib/resumes';
 import type { Claim, ExtractedResume, ProjectItem } from '@/lib/contracts';
@@ -35,9 +35,9 @@ export default function ResumeResultPage() {
 
           const extracted = resume.extracted;
           return (
-            <div className="space-y-12">
-              <div>
-                <div className="mb-3 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+            <div className="space-y-8">
+              <header>
+                <div className="mb-4 flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
                   <Link
                     href="/dashboard"
                     className="transition-colors hover:text-foreground"
@@ -49,32 +49,38 @@ export default function ResumeResultPage() {
                     {resume.fileName}
                   </span>
                 </div>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  Here&apos;s what we found
-                </h1>
-                {extracted?.summary && (
-                  <p className="mt-3 max-w-2xl text-muted-foreground">
-                    {extracted.summary}
-                  </p>
-                )}
-              </div>
-
-              <InterviewSetup
-                key={resume.targets.map((t) => t.role).join('|')}
-                resumeId={resume.id}
-                saved={resume.targets}
-                jdId={jdId ?? undefined}
-              />
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                      Here&apos;s what we found
+                    </h1>
+                    {extracted?.summary && (
+                      <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                        {extracted.summary}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </header>
 
               {jd.data && jd.data.jd.requiredSkills.length > 0 && (
-                <Section title="Target role — required skills">
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Target role · required skills
+                  </p>
                   <ChipList items={jd.data.jd.requiredSkills} />
-                </Section>
+                </div>
               )}
 
-              <ClaimsSection claims={claims} />
+              <ResumeTabs claims={claims} extracted={extracted} />
 
-              {extracted && <ExtractionSections extracted={extracted} />}
+              {/* Pinned to the bottom of the screen while the tab content scrolls above it. */}
+              <div className="sticky bottom-0 z-20 -mx-6 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/90 px-6 py-4 backdrop-blur-xl">
+                <p className="text-sm text-muted-foreground">
+                  Next: pick the role, length and voice.
+                </p>
+                <SetupCta resumeId={resume.id} jdId={jdId} />
+              </div>
             </div>
           );
         })()}
@@ -188,37 +194,123 @@ function StateNote({
   );
 }
 
-/* ── Claims (the differentiator) ── */
+/* ── Next step ── */
 
-function ClaimsSection({ claims }: { claims: Claim[] }) {
-  if (claims.length === 0) {
-    return (
-      <Section title="Claims to defend">
-        <p className="text-sm text-muted-foreground">
-          No strong claims found. Try a more detailed resume.
-        </p>
-      </Section>
-    );
-  }
+function SetupCta({
+  resumeId,
+  jdId,
+}: {
+  resumeId: string;
+  jdId: string | null;
+}) {
+  return (
+    <Link
+      href={`/resumes/${resumeId}/setup${jdId ? `?jd=${jdId}` : ''}`}
+      className="shrink-0"
+    >
+      <Button className="h-11 w-full px-5 text-[15px] sm:w-auto">
+        Set interview configuration
+      </Button>
+    </Link>
+  );
+}
+
+type TabKey = 'experience' | 'projects' | 'skills' | 'claims';
+
+/**
+ * The resume in four tabs, so the page is short and calm. Claims are optional
+ * reading: they only open when the user asks for them.
+ */
+function ResumeTabs({
+  claims,
+  extracted,
+}: {
+  claims: Claim[];
+  extracted: ExtractedResume | null;
+}) {
+  const experience = extracted?.experience ?? [];
+  const projects = extracted?.projects ?? [];
+  const skills = extracted?.skills ?? [];
+
+  const tabs: { key: TabKey; label: string; count: number }[] = [
+    { key: 'experience', label: 'Experience', count: experience.length },
+    { key: 'projects', label: 'Projects', count: projects.length },
+    { key: 'skills', label: 'Skills', count: skills.length },
+    { key: 'claims', label: 'Claims to defend', count: claims.length },
+  ];
+  const first = tabs.find((t) => t.key !== 'claims' && t.count > 0)?.key;
+  const [tab, setTab] = useState<TabKey>(first ?? 'claims');
+
   return (
     <section>
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Claims to defend
-        </h2>
-        <span className="text-sm text-muted-foreground">
-          {claims.length} found
-        </span>
+      <div
+        role="tablist"
+        className="flex flex-wrap gap-1 border-b border-border pb-3"
+      >
+        {tabs.map((t) => {
+          const active = t.key === tab;
+          return (
+            <button
+              key={t.key}
+              role="tab"
+              type="button"
+              aria-selected={active}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm transition-colors ${
+                active
+                  ? 'bg-muted font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t.label}
+              <span
+                className={`rounded-full px-1.5 py-0.5 font-mono text-[11px] ${
+                  active
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {t.count}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        &ldquo;Go beyond the resume.&rdquo; These are what the interview will
-        probe.
+
+      <div className="max-h-[calc(100dvh-30rem)] min-h-[14rem] overflow-y-auto pr-1 pt-6">
+        {tab === 'experience' && <ExperiencePanel items={experience} />}
+        {tab === 'projects' && <ProjectsPanel projects={projects} />}
+        {tab === 'skills' &&
+          (skills.length ? (
+            <ChipList items={skills} />
+          ) : (
+            <Empty>No skills found.</Empty>
+          ))}
+        {tab === 'claims' && <ClaimsPanel claims={claims} />}
+      </div>
+    </section>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm text-muted-foreground">{children}</p>;
+}
+
+/* ── Panels ── */
+
+function ClaimsPanel({ claims }: { claims: Claim[] }) {
+  if (claims.length === 0)
+    return <Empty>No strong claims found. Try a more detailed resume.</Empty>;
+  return (
+    <div>
+      <p className="mb-4 text-sm text-muted-foreground">
+        These are what the interview will probe.
       </p>
-      <ul className="mt-5 space-y-3">
+      <ul className="space-y-3">
         {claims.map((c) => (
           <li
             key={c.id}
-            className="rounded-[var(--radius)] border border-border bg-card p-4"
+            className="rounded-xl border border-border bg-card p-4"
           >
             <p className="text-card-foreground">{c.text}</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -236,7 +328,7 @@ function ClaimsSection({ claims }: { claims: Claim[] }) {
           </li>
         ))}
       </ul>
-    </section>
+    </div>
   );
 }
 
@@ -253,125 +345,67 @@ function Dots({ value }: { value: number }) {
   );
 }
 
-/* ── Extraction (skills / projects / experience) ── */
-
-function ExtractionSections({ extracted }: { extracted: ExtractedResume }) {
+function ExperiencePanel({ items }: { items: ExtractedResume['experience'] }) {
+  if (items.length === 0) return <Empty>No experience found.</Empty>;
   return (
-    <>
-      {extracted.skills.length > 0 && (
-        <Section title="Skills">
-          <ChipList items={extracted.skills} />
-        </Section>
-      )}
-
-      <ProjectSections projects={extracted.projects} />
-
-      {extracted.experience.length > 0 && (
-        <Section title="Experience">
-          <div className="space-y-5">
-            {extracted.experience.map((e, i) => (
-              <div key={i}>
-                <p className="font-medium">
-                  {[e.role, e.company].filter(Boolean).join(' · ') || 'Role'}
-                  {e.duration && (
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      {e.duration}
-                    </span>
-                  )}
-                </p>
-                {e.highlights.length > 0 && (
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                    {e.highlights.map((h, j) => (
-                      <li key={j}>{h}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
+    <div className="space-y-3">
+      {items.map((e, i) => (
+        <div key={i} className="rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <p className="font-medium">
+              {[e.role, e.company].filter(Boolean).join(' · ') || 'Role'}
+            </p>
+            {e.duration && (
+              <span className="font-mono text-xs text-muted-foreground">
+                {e.duration}
+              </span>
+            )}
           </div>
-        </Section>
-      )}
-    </>
-  );
-}
-
-function ProjectSections({ projects }: { projects: ProjectItem[] }) {
-  const personal = projects.filter((p) => p.origin !== 'professional');
-  const professional = projects.filter((p) => p.origin === 'professional');
-
-  // Group professional projects by the company they were built at.
-  const byOrg = new Map<string, ProjectItem[]>();
-  for (const p of professional) {
-    const org = p.org?.trim() || 'Work';
-    const list = byOrg.get(org);
-    if (list) list.push(p);
-    else byOrg.set(org, [p]);
-  }
-
-  return (
-    <>
-      {personal.length > 0 && (
-        <Section title="Projects">
-          <div className="space-y-4">
-            {personal.map((p, i) => (
-              <ProjectCard key={i} project={p} />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {professional.length > 0 && (
-        <Section title="Professional work">
-          <div className="space-y-6">
-            {[...byOrg.entries()].map(([org, items]) => (
-              <div key={org}>
-                <p className="mb-3 text-sm font-medium text-muted-foreground">
-                  at {org}
-                </p>
-                <div className="space-y-4">
-                  {items.map((p, i) => (
-                    <ProjectCard key={i} project={p} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-    </>
-  );
-}
-
-function ProjectCard({ project }: { project: ProjectItem }) {
-  return (
-    <div>
-      <p className="font-medium">{project.name}</p>
-      {project.description && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {project.description}
-        </p>
-      )}
-      {project.tech.length > 0 && (
-        <div className="mt-2">
-          <ChipList items={project.tech} />
+          {e.highlights.length > 0 && (
+            <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
+              {e.highlights.map((h, j) => (
+                <li key={j}>{h}</li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      ))}
     </div>
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function ProjectsPanel({ projects }: { projects: ProjectItem[] }) {
+  if (projects.length === 0) return <Empty>No projects found.</Empty>;
   return (
-    <section>
-      <h2 className="mb-4 text-lg font-semibold tracking-tight">{title}</h2>
-      {children}
-    </section>
+    <div className="space-y-3">
+      {projects.map((p, i) => (
+        <ProjectCard key={i} project={p} />
+      ))}
+    </div>
+  );
+}
+
+function ProjectCard({ project }: { project: ProjectItem }) {
+  const work = project.origin === 'professional';
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-medium">{project.name}</p>
+        <Badge tone="muted">
+          {work ? `Work${project.org ? ` · ${project.org}` : ''}` : 'Personal'}
+        </Badge>
+      </div>
+      {project.description && (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {project.description}
+        </p>
+      )}
+      {project.tech.length > 0 && (
+        <div className="mt-3">
+          <ChipList items={project.tech} />
+        </div>
+      )}
+    </div>
   );
 }
 
