@@ -18,9 +18,9 @@ import { cn } from '@/lib/utils';
 const DURATION_MS = 5000;
 
 const SLIDES = [
-  { key: 'resume', title: 'Your resume', note: 'We pick out what you claim', url: 'intervio.ai/resume' },
-  { key: 'interview', title: 'The interview', note: 'A real conversation, out loud', url: 'intervio.ai/interview' },
-  { key: 'report', title: 'Your report', note: 'Each claim, honestly weighed', url: 'intervio.ai/report' },
+  { key: 'resume', title: 'Your resume', note: 'We pick out what you claim' },
+  { key: 'interview', title: 'The interview', note: 'A real conversation, out loud' },
+  { key: 'report', title: 'Your report', note: 'Each claim, honestly weighed' },
 ] as const;
 
 export function ProductShowcase() {
@@ -88,22 +88,6 @@ export function ProductShowcase() {
     >
       {/* The window */}
       <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_90px_-45px_rgba(10,42,74,0.5)]">
-        <div className="relative flex h-10 items-center border-b border-border bg-surface px-4">
-          <div className="flex gap-1.5" aria-hidden>
-            <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-            <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-            <span className="h-2.5 w-2.5 rounded-full bg-foreground/15" />
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 flex justify-center">
-            <span
-              key={SLIDES[index].key}
-              className="caption-word rounded-md bg-background/70 px-3 py-0.5 font-mono text-[11px] text-muted-foreground"
-            >
-              {SLIDES[index].url}
-            </span>
-          </div>
-        </div>
-
         <div className="overflow-hidden">
           <div
             className="flex transition-transform duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)] motion-reduce:transition-none"
