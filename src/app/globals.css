@@ -46,12 +46,12 @@
   --input: #d3e0ee;
   --muted: #e7eef7;
   --muted-foreground: #566a82;
-  --primary: #103a63; /* deep navy-blue, echoing the dark-mode canvas */
+  --primary: #0a2a4a; /* deep navy-blue, echoing the dark-mode canvas */
   --primary-foreground: #ffffff;
-  --cta-a: #1d5a96;
-  --cta-b: #2d74bd;
-  --cta-c: #4a91d6;
-  --ring: #103a63;
+  --cta-a: #123f6b;
+  --cta-b: #1b5590;
+  --cta-c: #2f74b8;
+  --ring: #0a2a4a;
 
   --success: #12a150;
   --warning: #c67a08;

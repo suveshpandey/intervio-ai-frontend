@@ -262,9 +262,10 @@ export function MoonIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill={svg} className={className} aria-hidden>
       <path
-        d="M20 13.5A8 8 0 1 1 10.5 4a6.2 6.2 0 0 0 9.5 9.5Z"
+        d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"
         stroke="currentColor"
         strokeWidth="1.5"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
