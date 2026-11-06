@@ -54,6 +54,9 @@ export function useInterviews() {
   return useQuery({
     queryKey: ['interviews'],
     queryFn: () => api.get<{ interviews: InterviewSummary[] }>('/interviews'),
+    // While one is waiting to be joined or rejoined, keep checking: the server closes it on a timer.
+    refetchInterval: (query) =>
+      query.state.data?.interviews.some((i) => i.status === 'planned' || i.status === 'live') ? 30_000 : false,
   });
 }
 

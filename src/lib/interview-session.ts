@@ -6,7 +6,11 @@ import { useTranscript, useEndInterview } from '@/lib/interviews';
 import { useBlueprint } from '@/lib/blueprints';
 import { PcmPlayer } from '@/lib/audio-player';
 import { MicRecorder } from '@/lib/audio-recorder';
-import { connectVoice, type ServerMessage, type VoiceConnection } from '@/lib/voice-socket';
+import {
+  connectVoice,
+  type ServerMessage,
+  type VoiceConnection,
+} from '@/lib/voice-socket';
 import type { PlanSection } from '@/lib/contracts';
 
 /** The gateway streams the interviewer's voice as PCM16 at this rate. */
@@ -97,7 +101,10 @@ export function useInterviewSession(interviewId: string) {
     const pending = turns.find((t) => t.answer === null);
     setQuestion(pending?.question ?? null);
     setSectionKey(pending?.sectionKey ?? turns.at(-1)?.sectionKey ?? '');
-    setDone(interview.status !== 'live' || !pending);
+    setDone(
+      (interview.status !== 'live' && interview.status !== 'planned') ||
+        !pending,
+    );
     answered.current = turns.filter((t) => t.answer !== null).length;
   }, [transcript.data]);
 
@@ -195,7 +202,10 @@ export function useInterviewSession(interviewId: string) {
           if (msg.status === 'ok') {
             // Briefly say it's back — words spoken during the trouble may be gone.
             setHearing((h) => (h === 'ok' ? 'ok' : 'recovered'));
-            recoveredTimer.current = setTimeout(() => setHearing('ok'), RECOVERED_NOTICE_MS);
+            recoveredTimer.current = setTimeout(
+              () => setHearing('ok'),
+              RECOVERED_NOTICE_MS,
+            );
           } else {
             setHearing(msg.status);
           }
@@ -214,7 +224,7 @@ export function useInterviewSession(interviewId: string) {
   );
 
   /**
-   * Stop the interview now and go back to the plan.
+   * Stop the interview now and open its page.
    * Tears down locally first so nothing keeps talking or listening, then tells the
    * server over HTTP (reliable even if the socket has already dropped).
    */
@@ -229,14 +239,13 @@ export function useInterviewSession(interviewId: string) {
     } catch {
       /* Leaving anyway — an explicit end is idempotent server-side. */
     }
-    // Enough answers to be worth reporting on? Go straight to the report;
-    // otherwise back to the plan, where they can start again.
-    if (answered.current >= MIN_ANSWERS_FOR_REPORT) {
-      router.push(`/interviews/${interviewId}?tab=report`);
-      return;
-    }
-    const resumeId = blueprint.data?.blueprint.resumeId;
-    router.push(resumeId ? `/review/${resumeId}` : '/dashboard');
+    // Enough answers to be worth a report? Open it on the report tab; otherwise
+    // the interview's own page (transcript), which says what happened.
+    router.push(
+      answered.current >= MIN_ANSWERS_FOR_REPORT
+        ? `/interviews/${interviewId}?tab=report`
+        : `/interviews/${interviewId}`,
+    );
   }
 
   /** Must run from a click — browsers block audio that isn't user-initiated. */
@@ -280,10 +289,16 @@ export function useInterviewSession(interviewId: string) {
       } catch (err) {
         setMicState('failed');
         setShowTyping(true);
-        setError(err instanceof Error ? err.message : 'Microphone unavailable.');
+        setError(
+          err instanceof Error ? err.message : 'Microphone unavailable.',
+        );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start the interview audio.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not start the interview audio.',
+      );
     } finally {
       setConnecting(false);
     }
@@ -309,7 +324,12 @@ export function useInterviewSession(interviewId: string) {
     return () => clearInterval(t);
   }, [ticking]);
   const secondsLeft = clock
-    ? Math.max(0, Math.round(clock.left - (ticking ? Math.max(0, now - clock.at) / 1000 : 0)))
+    ? Math.max(
+        0,
+        Math.round(
+          clock.left - (ticking ? Math.max(0, now - clock.at) / 1000 : 0),
+        ),
+      )
     : null;
 
   // Half-duplex: the mic is closed while the interviewer speaks, so it can
@@ -326,6 +346,8 @@ export function useInterviewSession(interviewId: string) {
   return {
     loading: transcript.isLoading,
     loadError: Boolean(transcript.error),
+    /** The interview's state on the server (planned, live, not_started…). */
+    status: transcript.data?.interview.status,
     role: bp?.role ?? '',
     durationMin: bp?.durationMin ?? 0,
     voiceId: bp?.voice,

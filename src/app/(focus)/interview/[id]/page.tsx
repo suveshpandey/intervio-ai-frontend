@@ -7,7 +7,11 @@ import { Input } from '@/components/ui/input';
 import { PageLoader } from '@/components/ui/page-loader';
 import { KeyboardIcon, XIcon } from '@/components/icons';
 import { TopBar } from '@/components/interview/top-bar';
-import { ParticipantTile, type TileEffect, type TileStatus } from '@/components/interview/participant-tile';
+import {
+  ParticipantTile,
+  type TileEffect,
+  type TileStatus,
+} from '@/components/interview/participant-tile';
 import { CaptionBar } from '@/components/interview/caption-bar';
 import { HearingNotice } from '@/components/interview/hearing-notice';
 import { InterviewEnded } from '@/components/interview/interview-ended';
@@ -36,7 +40,8 @@ export default function InterviewRoom() {
   const { user } = useSession();
   const voices = useVoices();
 
-  if (s.loading) return <PageLoader fullscreen label="Getting your interview ready…" />;
+  if (s.loading)
+    return <PageLoader fullscreen label="Getting your interview ready…" />;
   if (s.loadError) {
     return (
       <div className="grid min-h-dvh place-items-center px-6 text-center">
@@ -50,8 +55,30 @@ export default function InterviewRoom() {
     );
   }
 
-  const interviewerName = voices.data?.voices.find((v) => v.id === s.voiceId)?.name ?? 'Interviewer';
-  const firstName = user?.name?.trim().split(/\s+/)[0] || user?.email.split('@')[0] || 'You';
+  // Never joined in time: the server closed it. Nothing to resume.
+  if (s.status === 'not_started') {
+    return (
+      <div className="grid min-h-dvh place-items-center px-6 text-center">
+        <div className="max-w-sm">
+          <p className="text-lg font-semibold tracking-tight">
+            This interview wasn&apos;t started in time
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            It closes by itself if nobody joins within 5 minutes. Start a new
+            one from your resume.
+          </p>
+          <Link href="/dashboard" className="mt-6 inline-block">
+            <Button>Back to dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const interviewerName =
+    voices.data?.voices.find((v) => v.id === s.voiceId)?.name ?? 'Interviewer';
+  const firstName =
+    user?.name?.trim().split(/\s+/)[0] || user?.email.split('@')[0] || 'You';
   const micReady = s.micState === 'ready';
   // The room opens when the interviewer starts talking, not when the socket
   // connects — in between, the server is still opening the speech streams.
@@ -60,16 +87,27 @@ export default function InterviewRoom() {
 
   // Whose turn is it?
   const yourTurn = inRoom && !s.done && !s.speaking && !s.thinking;
-  const youTalking = yourTurn && micReady && !s.muted && (Boolean(s.interim) || s.micLevel > TALKING_LEVEL);
+  const youTalking =
+    yourTurn &&
+    micReady &&
+    !s.muted &&
+    (Boolean(s.interim) || s.micLevel > TALKING_LEVEL);
 
   const aiStatus: TileStatus = !inRoom
-    ? { label: s.done ? 'Ended' : joining ? 'Getting ready' : 'Waiting to join', tone: 'neutral' }
+    ? {
+        label: s.done ? 'Ended' : joining ? 'Getting ready' : 'Waiting to join',
+        tone: 'neutral',
+      }
     : s.speaking
       ? { label: 'Speaking', tone: 'accent', bars: true }
       : s.thinking
         ? { label: 'Thinking', tone: 'neutral' }
         : { label: 'Listening', tone: 'neutral' };
-  const aiEffect: TileEffect = s.speaking ? 'ripple' : s.thinking || joining ? 'breathe' : null;
+  const aiEffect: TileEffect = s.speaking
+    ? 'ripple'
+    : s.thinking || joining
+      ? 'breathe'
+      : null;
 
   const youStatus: TileStatus = !inRoom
     ? { label: 'Not joined', tone: 'neutral' }
@@ -154,7 +192,9 @@ export default function InterviewRoom() {
         ) : (
           <div className="max-w-md text-center">
             <p className="text-xl font-semibold tracking-tight">
-              {joining ? `${interviewerName} is getting ready…` : 'Ready to join?'}
+              {joining
+                ? `${interviewerName} is getting ready…`
+                : 'Ready to join?'}
             </p>
             <p className="mt-1.5 text-sm text-muted-foreground">
               {joining ? (
@@ -162,8 +202,8 @@ export default function InterviewRoom() {
               ) : (
                 <>
                   {interviewerName} will interview you
-                  {s.durationMin ? ` for ${s.durationMin} minutes` : ''}. Turn your sound on — you&apos;ll
-                  answer out loud.
+                  {s.durationMin ? ` for ${s.durationMin} minutes` : ''}. Turn
+                  your sound on — you&apos;ll answer out loud.
                 </>
               )}
             </p>
@@ -185,11 +225,18 @@ export default function InterviewRoom() {
               <Input
                 value={s.draft}
                 onChange={(e) => s.setDraft(e.target.value)}
-                placeholder={s.speaking || s.thinking ? 'Wait for the question…' : 'Type your answer…'}
+                placeholder={
+                  s.speaking || s.thinking
+                    ? 'Wait for the question…'
+                    : 'Type your answer…'
+                }
                 disabled={s.speaking || s.thinking}
                 autoFocus
               />
-              <Button type="submit" disabled={s.speaking || s.thinking || !s.draft.trim()}>
+              <Button
+                type="submit"
+                disabled={s.speaking || s.thinking || !s.draft.trim()}
+              >
                 Send
               </Button>
             </form>
@@ -210,7 +257,11 @@ export default function InterviewRoom() {
               disabled={joining}
               className="h-12 min-w-[13rem] rounded-full px-8 text-[15px]"
             >
-              {s.connecting ? 'Connecting…' : joining ? 'Starting your interview…' : 'Join interview'}
+              {s.connecting
+                ? 'Connecting…'
+                : joining
+                  ? 'Starting your interview…'
+                  : 'Join interview'}
             </Button>
           )}
 

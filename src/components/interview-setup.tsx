@@ -113,7 +113,9 @@ export function InterviewSetup({
       if (err instanceof ApiError && err.code === 'interview_in_progress') {
         const fresh = await interviews.refetch();
         setRunningId(
-          fresh.data?.interviews.find((i) => i.status === 'live')?.id ?? null,
+          fresh.data?.interviews.find(
+            (i) => i.status === 'live' || i.status === 'planned',
+          )?.id ?? null,
         );
       }
     }

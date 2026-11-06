@@ -116,7 +116,8 @@ export interface BlueprintWithClaims {
   probedClaims: Claim[];
 }
 // ── Phase 3: Live interview ──
-export type InterviewStatus = 'planned' | 'live' | 'completed' | 'abandoned';
+/** planned = created, not joined yet · not_started = never joined in time. */
+export type InterviewStatus = 'planned' | 'live' | 'completed' | 'abandoned' | 'not_started';
 
 export interface EvalSnapshot {
   answerQuality: number;
@@ -191,6 +192,8 @@ export interface InterviewSummary {
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
+  /** When it closes if you don't (re)join — set while waiting to join, or after leaving. */
+  returnBy: string | null;
   turnCount: number;
   /** Set once the report exists. */
   verdict: Verdict | null;
