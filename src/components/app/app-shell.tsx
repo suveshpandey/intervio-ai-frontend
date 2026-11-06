@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Content column */}
       <div className="flex min-h-dvh flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 bg-background/70 px-4 backdrop-blur-xl sm:px-6">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}

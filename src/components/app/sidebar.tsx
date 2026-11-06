@@ -50,8 +50,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         onClick={onNavigate}
         className="mb-8 flex items-center gap-2.5 px-2 py-1"
       >
-        <Image src="/logo.png" alt="Intervio" width={28} height={28} priority />
-        <span className="text-[15px] font-semibold tracking-tight">
+        <Image src="/logo.png" alt="Intervio" width={38} height={38} priority />
+        <span className="text-[20px] font-semibold tracking-tight">
           Intervio<span className="text-muted-foreground">.ai</span>
         </span>
       </Link>
