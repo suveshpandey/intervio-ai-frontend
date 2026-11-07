@@ -3,10 +3,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { DashboardIcon, PlusIcon, ReportsIcon } from '@/components/icons';
+import {
+  DashboardIcon,
+  MicIcon,
+  PlusIcon,
+  ReportsIcon,
+} from '@/components/icons';
 import { useSession } from '@/lib/auth';
 import { useInterviews } from '@/lib/interviews';
 import { accessFor, useNow } from '@/lib/interview-status';
+import { useLastResume } from '@/lib/last-resume';
 import { cn } from '@/lib/utils';
 import type { InterviewSummary } from '@/lib/contracts';
 
@@ -18,7 +24,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-  { href: '/new', label: 'New interview', icon: PlusIcon },
+  { href: '/new', label: 'New resume', icon: PlusIcon },
 ];
 
 /** "2 Oct", or "Today" / "Yesterday" for the recent ones people actually look for. */
@@ -43,9 +49,18 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { user } = useSession();
   // The server enforces this; hiding the link just avoids sending people at a 403.
-  const nav = user?.isAdmin
-    ? [...NAV, { href: '/admin', label: 'Usage & spend', icon: ReportsIcon }]
+  const last = useLastResume();
+  // One click from anywhere to the setup page for the resume you used last.
+  const base: NavItem[] = last
+    ? [
+        NAV[0]!,
+        { href: last.href, label: 'Start interview', icon: MicIcon },
+        ...NAV.slice(1),
+      ]
     : NAV;
+  const nav = user?.isAdmin
+    ? [...base, { href: '/admin', label: 'Usage & spend', icon: ReportsIcon }]
+    : base;
 
   return (
     <div className="flex h-full flex-col p-4">
@@ -85,7 +100,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
-      <div className="mb-2 mt-7 px-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/50">
+      <hr className="mt-5 border-t border-border" />
+      <div className="mb-2 mt-4 px-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground/50">
         Interviews
       </div>
       <InterviewHistory pathname={pathname} onNavigate={onNavigate} />

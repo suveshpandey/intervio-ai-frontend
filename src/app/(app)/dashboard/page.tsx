@@ -8,6 +8,7 @@ import { ArrowRightIcon } from '@/components/icons';
 import { useSession } from '@/lib/auth';
 import { useResumes } from '@/lib/resumes';
 import { useInterviews } from '@/lib/interviews';
+import { useLastResume, type LastResume } from '@/lib/last-resume';
 import { GettingStarted } from '@/components/app/getting-started';
 import { StandingCard } from '@/components/dashboard/standing-card';
 import { NextStep } from '@/components/dashboard/next-step';
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const interviews = useInterviews();
   const items = resumes.data?.resumes ?? [];
   const runs = interviews.data?.interviews ?? [];
+  const last = useLastResume();
   const firstName = user?.name?.trim().split(/\s+/)[0];
 
   const loading = resumes.isLoading || interviews.isLoading;
@@ -39,7 +41,7 @@ export default function DashboardPage() {
         }
       />
 
-      <Spotlight />
+      <Spotlight last={last} />
 
       {!loading && <GettingStarted resumes={items} interviews={runs} />}
 
@@ -65,7 +67,7 @@ export default function DashboardPage() {
 
 /* ── Spotlight ── */
 
-function Spotlight() {
+function Spotlight({ last }: { last: LastResume | null }) {
   return (
     <section className="edge-top relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-10">
       {/* Top-right glow: light theme only — dark keeps the flat card. */}
@@ -84,15 +86,37 @@ function Spotlight() {
           Go beyond the <span className="text-primary">resume</span>.
         </h2>
         <p className="mt-3 leading-relaxed text-muted-foreground">
-          Upload a resume and Intervio extracts the claims worth defending — then puts them to the
-          test in a live voice interview.
+          Upload a resume and Intervio extracts the claims worth defending —
+          then puts them to the test in a live voice interview.
         </p>
-        <Link href="/new" className="mt-6 inline-block">
-          <Button className="h-11 px-5 text-[15px]">
-            Analyze a resume
-            <ArrowRightIcon className="h-4 w-4" />
-          </Button>
-        </Link>
+        {last ? (
+          <>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link href={last.href}>
+                <Button className="h-11 px-5 text-[15px]">
+                  Continue with last resume
+                  <ArrowRightIcon className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/new">
+                <Button variant="outline" className="h-11 px-5 text-[15px]">
+                  Analyze a new resume
+                </Button>
+              </Link>
+            </div>
+            <p className="mt-3 truncate text-sm text-muted-foreground">
+              {last.resume.fileName}
+              {last.role && ` · last interviewed as ${last.role}`}
+            </p>
+          </>
+        ) : (
+          <Link href="/new" className="mt-6 inline-block">
+            <Button className="h-11 px-5 text-[15px]">
+              Analyze a resume
+              <ArrowRightIcon className="h-4 w-4" />
+            </Button>
+          </Link>
+        )}
       </div>
     </section>
   );
@@ -129,7 +153,10 @@ function DashboardSkeleton() {
       <Skeleton className="mb-3 mt-10 h-4 w-24" />
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
         {Array.from({ length: 3 }, (_, i) => (
-          <div key={i} className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0">
+          <div
+            key={i}
+            className="flex items-center gap-4 border-b border-border px-5 py-4 last:border-0"
+          >
             <Skeleton className="h-9 w-10 rounded-lg" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />

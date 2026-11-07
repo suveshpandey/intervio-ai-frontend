@@ -186,6 +186,8 @@ export interface InterviewTranscript {
 export interface InterviewSummary {
   id: string;
   status: InterviewStatus;
+  /** The resume this interview was run on. */
+  resumeId: string;
   role: string;
   level: string;
   durationMin: number;
