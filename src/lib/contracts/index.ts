@@ -253,27 +253,15 @@ export interface Report {
 // ── Admin usage + spend ──
 export interface UsageSummary {
   currency: { usdToInr: number; source: 'frankfurter' | 'open.er-api' | 'fallback'; fetchedAt: string };
-  windowDays: number;
-  totals: {
-    allTimeUsd: number;
-    allTimeCalls: number;
-    todayUsd: number;
-    weekUsd: number;
-    interviews: number;
-    perInterviewUsd: number;
-  };
+  /** Everything below is for the time window that was asked for. */
+  totals: { usd: number; calls: number; interviews: number; perInterviewUsd: number };
   /** Spend split by who we pay: euri (LLM) and deepgram (voice). */
   providers: {
     provider: string;
-    today: { usd: number; calls: number };
-    week: { usd: number; calls: number };
-    /** The last `windowDays` days. */
-    window: { usd: number; calls: number };
-    allTime: { usd: number; calls: number };
+    usd: number;
+    calls: number;
     /** Share of all spend in the window, 0–1. */
     share: number;
-    /** Raw volume in the window. Seconds of audio for STT, characters for TTS. */
-    volume: { inputTokens: number; outputTokens: number; sttSeconds: number; ttsChars: number };
     models: {
       kind: string;
       model: string;

@@ -124,16 +124,16 @@ function Spotlight({ last }: { last: LastResume | null }) {
 
 /* Faint, on-brand equalizer — decorative (not data). */
 function Waves() {
-  const bars = [26, 40, 60, 44, 72, 52, 34, 58, 30];
+  const bars = [40, 62, 92, 68, 112, 80, 52, 88, 46];
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute right-8 top-1/2 hidden -translate-y-1/2 items-center gap-1.5 opacity-40 lg:flex"
+      className="pointer-events-none absolute right-16 top-1/2 hidden -translate-y-1/2 items-center gap-2 opacity-40 lg:flex"
     >
       {bars.map((h, i) => (
         <span
           key={i}
-          className="eq-bar w-1 rounded-full bg-primary"
+          className="eq-bar w-1.5 rounded-full bg-primary"
           style={{ height: h, animationDelay: `${i * 0.12}s` }}
         />
       ))}

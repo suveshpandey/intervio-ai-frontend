@@ -88,7 +88,7 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="group flex h-9 items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-2 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group flex h-9 items-center gap-2 rounded-l-none rounded-r-lg border border-border bg-surface py-1 pl-1 pr-2 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="avatar-initials h-7 w-7 shrink-0 bg-primary/15 text-[11px] text-primary">
           {initials}
