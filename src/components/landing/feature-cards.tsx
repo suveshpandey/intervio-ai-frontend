@@ -71,17 +71,17 @@ const FEATURES = [
   },
   {
     title: 'An interviewer that adapts',
-    body: 'It keeps to time and never repeats itself — reading each answer the way a good interviewer would, not a chatbot.',
+    body: 'It keeps to time and never repeats itself, reading each answer the way a good interviewer would, not a chatbot.',
     detail: <AdaptDetail />,
   },
   {
     title: 'Spoken, in your browser',
-    body: 'A real conversation out loud, with live captions — no phone call, no downloads, no setup. Ask it to repeat a question any time, like you would in person.',
+    body: 'A real conversation out loud, with live captions. No phone call, no downloads, no setup. Ask it to repeat a question any time, like you would in person.',
     detail: <VoiceDetail />,
   },
   {
     title: 'Feedback you can act on',
-    body: 'Every score comes from what you actually said, not a vibe — and points to the exact answer behind it, plus what to practise next.',
+    body: 'Every score comes from what you actually said, not a vibe, and points to the exact answer behind it, plus what to practise next.',
     detail: <VerdictDetail />,
   },
 ];

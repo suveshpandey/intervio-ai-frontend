@@ -17,8 +17,12 @@ import type { InterviewStatus } from '@/lib/contracts';
 
 type Tab = 'transcript' | 'report';
 
-const STATUS: Record<InterviewStatus, { label: string; tone: 'default' | 'success' | 'muted' | 'warning' }> = {
-  planned: { label: 'Not started', tone: 'muted' },
+const STATUS: Record<
+  InterviewStatus,
+  { label: string; tone: 'default' | 'success' | 'muted' | 'warning' }
+> = {
+  planned: { label: 'Ready to join', tone: 'warning' },
+  not_started: { label: 'Not started', tone: 'muted' },
   live: { label: 'In progress', tone: 'success' },
   completed: { label: 'Completed', tone: 'success' },
   abandoned: { label: 'Ended early', tone: 'muted' },
@@ -26,14 +30,19 @@ const STATUS: Record<InterviewStatus, { label: string; tone: 'default' | 'succes
 
 function minutesBetween(from: string | null, to: string | null): number | null {
   if (!from || !to) return null;
-  return Math.max(1, Math.round((new Date(to).getTime() - new Date(from).getTime()) / 60_000));
+  return Math.max(
+    1,
+    Math.round((new Date(to).getTime() - new Date(from).getTime()) / 60_000),
+  );
 }
 
 export default function InterviewPage() {
   const interviewId = useParams<{ id: string }>().id;
   const router = useRouter();
   const search = useSearchParams();
-  const [tab, setTab] = useState<Tab>(search.get('tab') === 'report' ? 'report' : 'transcript');
+  const [tab, setTab] = useState<Tab>(
+    search.get('tab') === 'report' ? 'report' : 'transcript',
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteInterview = useDeleteInterview();
 
@@ -45,12 +54,18 @@ export default function InterviewPage() {
   function openTab(next: Tab) {
     setTab(next);
     // Keep the URL shareable without re-running the page's queries.
-    router.replace(next === 'report' ? `/interviews/${interviewId}?tab=report` : `/interviews/${interviewId}`, {
-      scroll: false,
-    });
+    router.replace(
+      next === 'report'
+        ? `/interviews/${interviewId}?tab=report`
+        : `/interviews/${interviewId}`,
+      {
+        scroll: false,
+      },
+    );
   }
 
-  if (transcript.isLoading) return <PageLoader label="Loading this interview…" />;
+  if (transcript.isLoading)
+    return <PageLoader label="Loading this interview…" />;
 
   if (transcript.error || !interview) {
     return (
@@ -64,7 +79,9 @@ export default function InterviewPage() {
   }
 
   const status = STATUS[interview.status];
-  const answered = transcript.data!.turns.filter((t) => t.answer !== null).length;
+  const answered = transcript.data!.turns.filter(
+    (t) => t.answer !== null,
+  ).length;
   const minutes = minutesBetween(interview.startedAt, interview.endedAt);
   const started = interview.startedAt ? new Date(interview.startedAt) : null;
 
@@ -72,7 +89,9 @@ export default function InterviewPage() {
     <div className="mx-auto max-w-4xl pb-20">
       <header className="rise">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{interview.role}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {interview.role}
+          </h1>
           <Badge tone={status.tone}>{status.label}</Badge>
           <button
             type="button"
@@ -86,15 +105,33 @@ export default function InterviewPage() {
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
           {interview.level} level
-          {started && ` · ${started.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`}
+          {started &&
+            ` · ${started.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`}
           {` · ${answered} answer${answered === 1 ? '' : 's'}`}
           {minutes !== null && ` · ${minutes} min`}
         </p>
 
-        {interview.status === 'live' && (
+        {(interview.status === 'live' || interview.status === 'planned') && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+            <p className="max-w-xl">
+              {interview.status === 'planned'
+                ? 'This interview is ready but the clock hasn’t started. Join soon, or it closes on its own.'
+                : `This interview is still running. Its clock doesn’t pause: if you’ve left, you can rejoin for a short while, and it closes once the ${interview.durationMin} minutes are up.`}
+            </p>
+            <Link href={`/interview/${interview.id}`}>
+              <Button>
+                {interview.status === 'planned'
+                  ? 'Join interview'
+                  : 'Rejoin interview'}
+              </Button>
+            </Link>
+          </div>
+        )}
+        {interview.status === 'not_started' && (
           <p className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
-            This interview is still running. Its clock doesn&apos;t pause, so it closes itself once the{' '}
-            {interview.durationMin} minutes are up and the report is built from whatever was answered.
+            This interview wasn&apos;t started in time, so it was closed. It
+            still counts toward today&apos;s interviews. Start a new one from
+            your resume.
           </p>
         )}
       </header>
@@ -132,12 +169,18 @@ export default function InterviewPage() {
         ) : (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <p className="font-medium">
-              {interview.status === 'live' ? 'This interview is still running.' : 'No report for this one.'}
+              {interview.status === 'live' || interview.status === 'planned'
+                ? 'This interview is still open.'
+                : interview.status === 'not_started'
+                  ? 'This interview was never started.'
+                  : 'No report for this one.'}
             </p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-              {interview.status === 'live'
-                ? 'It is built automatically once the interview’s time is up.'
-                : `A report needs at least three answered questions — this one has ${answered}.`}
+              {interview.status === 'live' || interview.status === 'planned'
+                ? 'It is built automatically once the interview ends.'
+                : interview.status === 'not_started'
+                  ? 'There is nothing to report on.'
+                  : `A report needs at least three answered questions — this one has ${answered}.`}
             </p>
           </div>
         )}
@@ -148,16 +191,24 @@ export default function InterviewPage() {
           title="Delete this interview?"
           body={
             <>
-              Its transcript{answered > 0 && ` (${answered} answer${answered === 1 ? '' : 's'})`} and report
-              are deleted for good. Your resume and its claims stay.
+              Its transcript
+              {answered > 0 &&
+                ` (${answered} answer${answered === 1 ? '' : 's'})`}{' '}
+              and report are deleted for good. Your resume and its claims stay.
             </>
           }
           confirmLabel="Delete interview"
           loading={deleteInterview.isPending}
-          error={deleteInterview.error instanceof Error ? deleteInterview.error.message : null}
+          error={
+            deleteInterview.error instanceof Error
+              ? deleteInterview.error.message
+              : null
+          }
           onCancel={() => setConfirmDelete(false)}
           onConfirm={() =>
-            deleteInterview.mutate(interviewId, { onSuccess: () => router.replace('/dashboard') })
+            deleteInterview.mutate(interviewId, {
+              onSuccess: () => router.replace('/dashboard'),
+            })
           }
         />
       )}

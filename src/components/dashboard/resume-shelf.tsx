@@ -12,7 +12,11 @@ import type { Resume } from '@/lib/contracts';
 /** Status as quiet text, not a badge: the resume is the input, not the headline. */
 function statusOf(r: Resume): { text: string; tone: 'ok' | 'busy' | 'bad' } {
   if (r.parseStatus === 'done') return { text: 'Ready', tone: 'ok' };
-  if (r.parseStatus === 'failed') return { text: r.parseError?.split('.')[0] ?? 'Couldn’t read it', tone: 'bad' };
+  if (r.parseStatus === 'failed')
+    return {
+      text: r.parseError?.split('.')[0] ?? 'Couldn’t read it',
+      tone: 'bad',
+    };
   return { text: 'Reading it…', tone: 'busy' };
 }
 
@@ -38,15 +42,22 @@ function ResumeTile({ resume }: { resume: Resume }) {
           <FileIcon className="h-4 w-4" />
         </span>
         <span className="min-w-0 flex-1 pr-6">
-          <span className="block truncate text-sm font-medium">{resume.fileName}</span>
+          <span className="block truncate text-sm font-medium">
+            {resume.fileName}
+          </span>
           <span
             className={cn(
               'mt-0.5 block truncate text-xs',
-              status.tone === 'bad' ? 'text-destructive' : 'text-muted-foreground',
+              status.tone === 'bad'
+                ? 'text-destructive'
+                : 'text-muted-foreground',
             )}
           >
             {status.tone === 'ok' && (
-              <span aria-hidden className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success align-middle" />
+              <span
+                aria-hidden
+                className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success align-middle"
+              />
             )}
             {status.text} · {formatDay(resume.createdAt)}
           </span>
@@ -71,7 +82,9 @@ function ResumeTile({ resume }: { resume: Resume }) {
           loading={del.isPending}
           error={del.error instanceof Error ? del.error.message : null}
           onCancel={() => setConfirming(false)}
-          onConfirm={() => del.mutate(resume.id, { onSuccess: () => setConfirming(false) })}
+          onConfirm={() =>
+            del.mutate(resume.id, { onSuccess: () => setConfirming(false) })
+          }
         />
       )}
     </li>
@@ -84,9 +97,15 @@ export function ResumeShelf({ resumes }: { resumes: Resume[] }) {
     <section className="mt-10">
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-sm font-medium">
-          Resumes <span className="ml-1 font-mono text-xs text-muted-foreground">{resumes.length}</span>
+          Resumes{' '}
+          <span className="ml-1 font-mono text-xs text-muted-foreground">
+            {resumes.length}
+          </span>
         </h2>
-        <Link href="/new" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <Link
+          href="/new"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
           Upload another
         </Link>
       </div>

@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { Resume, ResumeDetail, JobDescription } from '@/lib/contracts';
+import type { InterviewTarget, Resume, ResumeDetail, JobDescription } from '@/lib/contracts';
 
 const ACTIVE: Set<Resume['parseStatus']> = new Set(['pending', 'processing']);
 
@@ -33,6 +33,18 @@ export function useUploadResume() {
       return api.upload<{ resume: Resume }>('/resumes', form);
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['resumes'] }),
+  });
+}
+
+/** Save the interview target for a resume (role, level, duration, voice, JD). */
+export function useSaveTarget(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (target: InterviewTarget) => api.put<{ resume: Resume }>(`/resumes/${id}/target`, target),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['resume', id] });
+      void qc.invalidateQueries({ queryKey: ['resumes'] });
+    },
   });
 }
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRightIcon } from '@/components/icons';
+import { accessFor } from '@/lib/interview-status';
 import type { InterviewSummary, Resume } from '@/lib/contracts';
 
 interface Step {
@@ -17,20 +18,37 @@ interface Step {
  * then getting a first interview going.
  */
 function pick(interviews: InterviewSummary[], resumes: Resume[]): Step {
-  const live = interviews.find((i) => i.status === 'live');
-  if (live) {
+  const open = interviews.find(
+    (i) => i.status === 'live' || i.status === 'planned',
+  );
+  if (open) {
+    const access = accessFor(open, Date.now());
+    const waiting = open.status === 'planned';
+    const left = access.detail.replace(
+      /^(Ready to join · closes in |Rejoin within )/,
+      '',
+    );
     return {
-      eyebrow: 'In progress',
-      title: 'Your interview is still running',
-      body: `${live.role} — the clock doesn’t pause, so pick it back up now.`,
-      href: `/interview/${live.id}`,
-      cta: 'Continue interview',
+      eyebrow: waiting ? 'Ready to start' : 'In progress',
+      title: waiting
+        ? 'Your interview is ready'
+        : 'Your interview is still running',
+      body: waiting
+        ? `${open.role} — the clock hasn’t started. Join within ${left} or it closes.`
+        : access.short === 'Rejoin'
+          ? `${open.role} — you left. Rejoin within ${left} or it ends; the clock hasn’t paused.`
+          : `${open.role} — the clock doesn’t pause, so pick it back up now.`,
+      href: `/interview/${open.id}`,
+      cta: waiting ? 'Join interview' : 'Rejoin interview',
       live: true,
     };
   }
 
   const latest = interviews.find((i) => i.claims);
-  if (latest?.claims && latest.claims.claimsSupported < latest.claims.claimsProbed) {
+  if (
+    latest?.claims &&
+    latest.claims.claimsSupported < latest.claims.claimsProbed
+  ) {
     const gap = latest.claims.claimsProbed - latest.claims.claimsSupported;
     return {
       eyebrow: 'Next step',
@@ -48,9 +66,9 @@ function pick(interviews: InterviewSummary[], resumes: Resume[]): Step {
       title: latest ? 'Go again, a level up' : 'Take your first interview',
       body: latest
         ? 'Everything held up last time. Try a harder interview to find the edges.'
-        : 'Your resume is ready. Check the plan, pick a voice and start talking.',
+        : 'Your resume is ready. Your target is saved once, so starting is one click.',
       href: `/resumes/${ready.id}`,
-      cta: latest ? 'Set up an interview' : 'Set up your interview',
+      cta: latest ? 'Start an interview' : 'Start your first interview',
     };
   }
 
@@ -63,17 +81,32 @@ function pick(interviews: InterviewSummary[], resumes: Resume[]): Step {
   };
 }
 
-export function NextStep({ interviews, resumes }: { interviews: InterviewSummary[]; resumes: Resume[] }) {
+export function NextStep({
+  interviews,
+  resumes,
+}: {
+  interviews: InterviewSummary[];
+  resumes: Resume[];
+}) {
   const step = pick(interviews, resumes);
 
   return (
     <section className="relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-6">
       <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
-        {step.live && <span aria-hidden className="live-dot h-1.5 w-1.5 rounded-full bg-success" />}
+        {step.live && (
+          <span
+            aria-hidden
+            className="live-dot h-1.5 w-1.5 rounded-full bg-success"
+          />
+        )}
         {step.eyebrow}
       </p>
-      <p className="mt-3 text-lg font-medium leading-snug tracking-tight">{step.title}</p>
-      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+      <p className="mt-3 text-lg font-medium leading-snug tracking-tight">
+        {step.title}
+      </p>
+      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
+        {step.body}
+      </p>
       <Link
         href={step.href}
         className="mt-5 inline-flex items-center gap-1.5 self-start text-sm font-medium text-primary transition-[gap] hover:gap-2.5"

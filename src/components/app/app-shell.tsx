@@ -22,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh md:grid md:grid-cols-[16rem_1fr]">
+    <div className="min-h-dvh md:grid md:grid-cols-[18.5rem_1fr]">
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh border-r border-border bg-card/30 md:block">
         <Sidebar />
@@ -36,7 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             onClick={() => setDrawerOpen(false)}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
-          <div className="absolute left-0 top-0 h-full w-64 border-r border-border bg-card">
+          <div className="absolute left-0 top-0 h-full w-72 border-r border-border bg-card">
             <Sidebar onNavigate={() => setDrawerOpen(false)} />
           </div>
         </div>
@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Content column */}
       <div className="flex min-h-dvh flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-xl sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 bg-background/70 px-4 backdrop-blur-xl sm:px-6">
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <UserMenu />
           </div>

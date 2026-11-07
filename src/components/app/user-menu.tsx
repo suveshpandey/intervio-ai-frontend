@@ -5,7 +5,8 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession, useLogout } from '@/lib/auth';
-import { LogoutIcon, UserIcon } from '@/components/icons';
+import { cn } from '@/lib/utils';
+import { ChevronDownIcon, LogoutIcon, UserIcon } from '@/components/icons';
 
 function initialsFrom(name: string | null | undefined, email: string): string {
   if (name && name.trim()) {
@@ -87,12 +88,24 @@ export function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="flex h-9 items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-3 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="group flex h-9 items-center gap-2 rounded-l-none rounded-r-lg border border-border bg-surface py-1 pl-1 pr-2 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/15 text-[11px] font-semibold tracking-wide text-primary">
+        <span className="avatar-initials h-7 w-7 shrink-0 bg-primary/15 text-[11px] text-primary">
           {initials}
         </span>
         <span className="max-w-[8rem] truncate text-sm font-medium">{firstName}</span>
+        {/* Fades in on hover and bobs gently downward; stays put (flipped) while the menu is open. */}
+        <span
+          aria-hidden
+          className={cn(
+            'grid h-4 w-4 shrink-0 place-items-center text-muted-foreground transition-[opacity,transform] duration-200',
+            open
+              ? 'rotate-180 opacity-100'
+              : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100',
+          )}
+        >
+          <ChevronDownIcon className={cn('h-3.5 w-3.5', !open && 'chevron-nudge')} />
+        </span>
       </button>
 
       {open &&
@@ -106,7 +119,7 @@ export function UserMenu() {
             className="edge-top animate-pop shadow-pop z-[100] w-60 overflow-hidden rounded-xl border border-border bg-card p-1.5"
           >
             <div className="flex items-center gap-2.5 px-2 py-2">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+              <span className="avatar-initials h-9 w-9 shrink-0 bg-primary/15 text-xs text-primary">
                 {initials}
               </span>
               <div className="min-w-0">

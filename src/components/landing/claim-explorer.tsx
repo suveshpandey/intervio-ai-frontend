@@ -49,7 +49,7 @@ const BANDS: Record<Band, { label: string; tone: string; dot: string; bar: strin
 const EXAMPLES: Example[] = [
   {
     claim: 'Cut p95 API latency from 820ms to 190ms',
-    question: 'What was actually slow before you added the cache — had you profiled it?',
+    question: 'What was actually slow before you added the cache. Had you profiled it?',
     answer:
       'The dashboard endpoint joined four tables and the transactions timestamp had no index, so it did a full scan. I added a composite index first, which took it to about 300ms, then cached the aggregate for five minutes.',
     band: 'supported',
@@ -81,7 +81,7 @@ export function ClaimExplorer() {
       {/* the resume lines */}
       <div className="border-b border-border p-2">
         <p className="px-3 py-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground/70">
-          Pick a line — see how the interviewer probes it
+          Pick a line, see how the interviewer probes it
         </p>
         <div className="flex flex-col gap-1">
           {EXAMPLES.map((item, i) => (

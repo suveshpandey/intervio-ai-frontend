@@ -130,7 +130,7 @@ export function AnnotatedResume() {
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">Experience</p>
             <div className="mt-2.5 flex items-baseline justify-between gap-3">
               <p className="resume-serif text-[14px]">
-                Zentrix Technologies <span className="text-muted-foreground">— Software Engineer</span>
+                Zentrix Technologies <span className="text-muted-foreground">· Software Engineer</span>
               </p>
               <p className="shrink-0 font-mono text-[10px] text-muted-foreground/80">2023 – present</p>
             </div>
@@ -190,7 +190,7 @@ export function AnnotatedResume() {
           <section className="mt-4 opacity-70">
             <div className="flex items-baseline justify-between gap-3">
               <p className="resume-serif text-[14px]">
-                Kalvi Labs <span className="text-muted-foreground">— Junior Developer</span>
+                Kalvi Labs <span className="text-muted-foreground">· Junior Developer</span>
               </p>
               <p className="shrink-0 font-mono text-[10px] text-muted-foreground/80">2021 – 2023</p>
             </div>

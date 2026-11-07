@@ -1,5 +1,6 @@
 'use client';
 
+import { VERDICT } from '@/components/dashboard/verdict';
 import { DownloadIcon } from '@/components/icons';
 import { ClaimCard } from '@/components/report/claim-card';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ export function ReportView({ report }: { report: Report }) {
           <div>
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{verdict.label}</h2>
             <p className="mt-1.5 text-muted-foreground">{verdict.blurb}</p>
+            <Change report={report} />
             {report.partial && (
               <p className="mt-1 text-xs text-muted-foreground/70">
                 Based only on what was asked before you ended the interview.
@@ -201,4 +203,30 @@ export function ReportView({ report }: { report: Report }) {
 
 function scoreColor(score: number): string {
   return score >= 7 ? 'bg-success' : score >= 4.5 ? 'bg-warning' : 'bg-destructive';
+}
+
+const RANK: Record<Verdict, number> = { not_ready: 0, almost: 1, ready: 2 };
+
+/** "Up from Not ready yet" — how this check compares with the one before it. */
+function Change({ report }: { report: Report }) {
+  const prev = report.previous;
+  if (!prev) return null;
+  const now = report.readiness.verdict;
+  const diff = RANK[now] - RANK[prev.verdict];
+  const before = VERDICT[prev.verdict].label;
+  const text =
+    diff > 0
+      ? `Up from ${before} last time`
+      : diff < 0
+        ? `Down from ${before} last time`
+        : `Same as last time (${before})`;
+  const color = diff > 0 ? 'var(--success)' : diff < 0 ? 'var(--destructive)' : 'var(--muted-foreground)';
+  return (
+    <p className="mt-2 flex items-center gap-2 text-sm font-medium" style={{ color }}>
+      {text}
+      <span className="font-normal text-muted-foreground">
+        · {prev.claimsSupported} of {prev.claimsProbed} claims backed up then
+      </span>
+    </p>
+  );
 }

@@ -62,7 +62,18 @@ export interface Resume {
   parseStatus: ParseStatus;
   parseError: string | null;
   extracted: ExtractedResume | null;
+  /** Interview targets saved for this resume, one per role, most recently used first. */
+  targets: InterviewTarget[];
   createdAt: string;
+}
+
+export interface InterviewTarget {
+  role: string;
+  level: Level;
+  difficulty: Difficulty;
+  durationMin: number;
+  voice: string;
+  jdId?: string;
 }
 
 export interface ResumeDetail {
@@ -105,7 +116,8 @@ export interface BlueprintWithClaims {
   probedClaims: Claim[];
 }
 // ── Phase 3: Live interview ──
-export type InterviewStatus = 'planned' | 'live' | 'completed' | 'abandoned';
+/** planned = created, not joined yet · not_started = never joined in time. */
+export type InterviewStatus = 'planned' | 'live' | 'completed' | 'abandoned' | 'not_started';
 
 export interface EvalSnapshot {
   answerQuality: number;
@@ -174,12 +186,16 @@ export interface InterviewTranscript {
 export interface InterviewSummary {
   id: string;
   status: InterviewStatus;
+  /** The resume this interview was run on. */
+  resumeId: string;
   role: string;
   level: string;
   durationMin: number;
   createdAt: string;
   startedAt: string | null;
   endedAt: string | null;
+  /** When it closes if you don't (re)join — set while waiting to join, or after leaving. */
+  returnBy: string | null;
   turnCount: number;
   /** Set once the report exists. */
   verdict: Verdict | null;
@@ -230,33 +246,36 @@ export interface Report {
   claimAudit: ClaimAuditEntry[];
   readiness: { verdict: Verdict; reasons: string[]; gaps: string[] };
   improvements: { title: string; detail: string }[];
+  /** The interview before this one on the same resume, for "up from …". */
+  previous?: { verdict: Verdict; claimsSupported: number; claimsProbed: number; createdAt: string } | null;
 }
 
 // ── Admin usage + spend ──
 export interface UsageSummary {
   currency: { usdToInr: number; source: 'frankfurter' | 'open.er-api' | 'fallback'; fetchedAt: string };
-  windowDays: number;
-  totals: {
-    allTimeUsd: number;
-    allTimeCalls: number;
-    todayUsd: number;
-    weekUsd: number;
-    interviews: number;
-    perInterviewUsd: number;
-  };
-  byModel: {
+  /** Everything below is for the time window that was asked for. */
+  totals: { usd: number; calls: number; interviews: number; perInterviewUsd: number };
+  /** Spend split by who we pay: euri (LLM) and deepgram (voice). */
+  providers: {
     provider: string;
-    model: string;
+    usd: number;
     calls: number;
-    inputTokens: number;
-    outputTokens: number;
-    units: number;
-    costUsd: number;
-    /** We are guessing this model's rate. */
-    estimated: boolean;
+    /** Share of all spend in the window, 0–1. */
+    share: number;
+    models: {
+      kind: string;
+      model: string;
+      calls: number;
+      inputTokens: number;
+      outputTokens: number;
+      units: number;
+      costUsd: number;
+      /** We are guessing this model's rate. */
+      estimated: boolean;
+    }[];
+    tasks: { kind: string; task: string; calls: number; costUsd: number }[];
   }[];
-  byTask: { kind: string; task: string; calls: number; costUsd: number }[];
-  byDay: { day: string; costUsd: number; calls: number }[];
+  byDay: { day: string; costUsd: number; calls: number; byProvider: Record<string, number> }[];
   topUsers: { userId: string | null; email: string; costUsd: number; calls: number }[];
   turnLatencyMs: { p50: number; p95: number; max: number };
 }

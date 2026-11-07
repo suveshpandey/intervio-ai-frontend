@@ -26,28 +26,59 @@ export function VoicePicker({
   // Never leave a clip playing after the user navigates away.
   useEffect(
     () => () => {
-      audio.current?.pause();
+      const el = audio.current;
       audio.current = null;
+      if (el) {
+        el.onended = null;
+        el.onerror = null;
+        el.pause();
+      }
     },
     [],
   );
 
-  function preview(voice: VoiceOption) {
-    audio.current?.pause();
-    if (playing === voice.id) {
-      setPlaying(null);
-      return;
+  /** Silence whatever is playing and forget it, so nothing can restart later. */
+  function stop() {
+    const el = audio.current;
+    audio.current = null;
+    if (el) {
+      el.onended = null;
+      el.onerror = null;
+      el.pause();
     }
+    setPlaying(null);
+  }
+
+  /** Only the Preview button plays a clip. It plays once, then stops by itself. */
+  function preview(voice: VoiceOption) {
+    const wasThis = playing === voice.id;
+    stop();
+    if (wasThis) return;
+
     const el = new Audio(voice.sampleUrl);
-    el.onended = () => setPlaying(null);
-    el.onerror = () => setPlaying(null);
+    // Ignore a clip that has since been replaced or stopped.
+    const done = () => {
+      if (audio.current === el) stop();
+    };
+    el.onended = done;
+    el.onerror = done;
     audio.current = el;
     setPlaying(voice.id);
-    void el.play().catch(() => setPlaying(null));
+    void el.play().catch(done);
+  }
+
+  /** Choosing a voice never plays anything — and silences a preview still running. */
+  function choose(id: string) {
+    stop();
+    onChange(id);
   }
 
   return (
-    <div role="radiogroup" aria-label="Interviewer voice" className="grid gap-3 sm:grid-cols-3">
+    <div
+      role="radiogroup"
+      aria-label="Interviewer voice"
+      className="grid gap-3 sm:grid-cols-3"
+    >
       {voices.map((v) => {
         const selected = v.id === value;
         const isPlaying = playing === v.id;
@@ -57,11 +88,11 @@ export function VoicePicker({
             role="radio"
             aria-checked={selected}
             tabIndex={0}
-            onClick={() => onChange(v.id)}
+            onClick={() => choose(v.id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onChange(v.id);
+                choose(v.id);
               }
             }}
             className={cn(
@@ -77,7 +108,9 @@ export function VoicePicker({
               aria-hidden
               className={cn(
                 'absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full transition-all',
-                selected ? 'scale-100 bg-primary text-primary-foreground' : 'scale-0',
+                selected
+                  ? 'scale-100 bg-primary text-primary-foreground'
+                  : 'scale-0',
               )}
             >
               <CheckIcon />
@@ -87,7 +120,9 @@ export function VoicePicker({
               <span
                 className={cn(
                   'grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-semibold transition-colors',
-                  selected ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+                  selected
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-muted text-muted-foreground',
                 )}
               >
                 {v.name[0]}
@@ -100,7 +135,9 @@ export function VoicePicker({
               </div>
             </div>
 
-            <p className="mt-3 text-xs text-muted-foreground">{v.description}</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {v.description}
+            </p>
 
             <button
               type="button"
@@ -153,7 +190,13 @@ function Equalizer() {
 
 function PlayIcon() {
   return (
-    <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 12 12"
+      fill="currentColor"
+      aria-hidden
+    >
       <path d="M3 1.5v9l7-4.5-7-4.5Z" />
     </svg>
   );
@@ -161,7 +204,17 @@ function PlayIcon() {
 
 function CheckIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
       <path d="M2.5 6.2l2.3 2.3L9.5 3.8" />
     </svg>
   );
