@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1">
             <ThemeToggle />
             <UserMenu />
           </div>

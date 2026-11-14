@@ -7,7 +7,7 @@ import { TypedHeadline } from '@/components/landing/typed-headline';
 import { ProductShowcase } from '@/components/landing/product-showcase';
 import { ClaimExplorer } from '@/components/landing/claim-explorer';
 import { VoicePreview } from '@/components/landing/voice-preview';
-import { Reveal } from '@/components/landing/reveal';
+import { SplitSection } from '@/components/landing/split-section';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { FeatureCards } from '@/components/landing/feature-cards';
 
@@ -81,16 +81,6 @@ function FooterColumn({
   );
 }
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="h-px w-7 bg-primary/50" />
-      <span className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-        {children}
-      </span>
-    </div>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Hero product mockup — a live interview session card                 */
@@ -173,22 +163,14 @@ export default function LandingPage() {
       </header>
 
       {/* hero */}
-      <section className="relative mx-auto max-w-6xl px-5 pb-24 pt-16 text-center sm:pt-24 lg:pb-32">
+      <section className="relative mx-auto max-w-6xl px-5 pb-24 text-center lg:pb-32">
         {/* drifting particles, dissolving toward the bottom */}
-        <HeroParticles className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[760px] w-full" />
+        <HeroParticles className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[100dvh] min-h-[640px] w-full" />
 
-        <a
-          href="#how"
-          className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-card/80 py-1 pl-1 pr-3.5 text-xs text-muted-foreground shadow-float backdrop-blur transition-colors hover:text-foreground"
-        >
-          <span className="rounded-full bg-primary px-2.5 py-1 font-medium text-primary-foreground">
-            New
-          </span>
-          Pick your interviewer&apos;s voice before you start
-          <IconArrow className="h-3.5 w-3.5" />
-        </a>
+        {/* the hero fills the first screen, with its content centred like a poster */}
+        <div className="flex min-h-[100dvh] flex-col items-center justify-center pb-10 pt-24">
 
-        <h1 className="mx-auto mt-8 max-w-4xl text-balance text-5xl font-normal leading-[1.04] tracking-[-0.04em] sm:text-7xl lg:text-[5.5rem]">
+        <h1 className="mx-auto max-w-4xl text-balance text-6xl font-normal leading-[1.02] tracking-[-0.045em] sm:text-8xl lg:text-[7rem]">
           <span className="text-gradient">A real interview,</span>
           <br />
           <span className="text-primary">
@@ -196,7 +178,7 @@ export default function LandingPage() {
           </span>
         </h1>
 
-        <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
+        <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-2xl">
           Talk to an AI interviewer out loud, right in your browser. It asks
           about the work you&apos;ve actually done, follows up when an answer is
           thin, and tells you exactly how ready you are.
@@ -234,84 +216,71 @@ export default function LandingPage() {
           </span>
         </div>
 
+        </div>
+
         {/* the product: resume → interview → analysis, sliding every 5s */}
-        <div className="mx-auto mt-16 max-w-5xl text-left sm:mt-20">
+        <div className="mx-auto max-w-6xl text-left">
           <ProductShowcase />
         </div>
       </section>
 
       {/* how it works */}
-      <section id="how" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            From upload to a real interview in minutes.
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Your resume sets the questions. The interview is where you find out
-            how you&apos;d really do.
-          </p>
-        </div>
-
+      <SplitSection
+        id="how"
+        title="From upload to a real interview in minutes."
+        body="Your resume sets the questions. The interview is where you find out how you'd really do."
+        action={
+          <Link href="/signup">
+            <Button variant="outline" className="h-11 rounded-full px-6">
+              Try it free
+            </Button>
+          </Link>
+        }
+      >
         <HowItWorks />
-      </section>
+      </SplitSection>
 
       {/* hear it */}
-      <section className="mx-auto max-w-6xl px-5 pb-4">
-        <Reveal>
-          <div className="edge-top rounded-3xl border border-foreground/10 bg-card p-6 sm:p-8">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div className="max-w-md">
-                <Eyebrow>Your interviewer</Eyebrow>
-                <h2 className="mt-4 text-2xl font-semibold tracking-tight">
-                  Hear who you&apos;ll be talking to.
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Three voices to choose from before you start. Press play:
-                  this is the real thing, not a description of it.
-                </p>
-              </div>
-            </div>
-            <div className="mt-6">
-              <VoicePreview />
-            </div>
-          </div>
-        </Reveal>
-      </section>
+      <SplitSection
+        flip
+        title="Hear who you'll be talking to."
+        body="Three voices to choose from before you start. Press play: this is the real thing, not a description of it."
+      >
+        <VoicePreview />
+      </SplitSection>
 
       {/* why it's different */}
-      <section id="why" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <h2 className="text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-              Most mock interviews ask generic questions.{' '}
-              <span className="text-primary">Ours asks about you.</span>
-            </h2>
-            <p className="mt-5 text-muted-foreground">
-              Practice tools quiz you on textbook questions anyone can look up.
-              A real interviewer picks a line from your resume and says
-              &ldquo;walk me through that.&rdquo; That&apos;s the interview
-              Intervio runs, and its feedback is built on what you actually
-              said, not how smooth you sounded.
-            </p>
-            <p className="mt-4 text-muted-foreground">
-              Fair feedback, never accusations. Each answer is judged{' '}
-              <span className="text-foreground">backed up</span>,{' '}
-              <span className="text-foreground">partly backed up</span>, or{' '}
-              <span className="text-foreground">not enough detail</span>, with
-              the exact moment in the interview that decided it.
-            </p>
-          </div>
-
-          <ClaimExplorer />
-        </div>
-      </section>
+      <SplitSection
+        id="why"
+        title={
+          <>
+            Most mock interviews ask generic questions.{' '}
+            <span className="text-primary">Ours asks about you.</span>
+          </>
+        }
+        body={
+          <>
+            A real interviewer picks a line from your resume and says
+            &ldquo;walk me through that.&rdquo; Each answer is judged{' '}
+            <span className="text-foreground">backed up</span>,{' '}
+            <span className="text-foreground">partly backed up</span>, or{' '}
+            <span className="text-foreground">not enough detail</span>, with the
+            exact moment that decided it.
+          </>
+        }
+      >
+        <ClaimExplorer />
+      </SplitSection>
 
       {/* features */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-20 sm:py-28">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+      <section id="features" className="mx-auto max-w-6xl px-5 py-12 sm:py-20">
+        <div className="grid items-end gap-4 lg:grid-cols-2 lg:gap-16">
+          <h2 className="text-4xl font-normal leading-[1.08] tracking-[-0.035em] sm:text-5xl">
             Built to feel like the real interview.
           </h2>
+          <p className="text-muted-foreground">
+            Spoken questions, live follow-ups and a report you can act on.
+          </p>
         </div>
 
         <FeatureCards />

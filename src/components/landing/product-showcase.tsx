@@ -87,8 +87,14 @@ export function ProductShowcase() {
       className="relative"
     >
       {/* The window */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_90px_-45px_rgba(10,42,74,0.5)]">
-        <div className="overflow-hidden">
+      <div
+        className="relative overflow-hidden rounded-[2.5rem] bg-surface p-4 sm:p-8"
+        style={{
+          background:
+            'radial-gradient(60% 40% at 50% 0%, color-mix(in oklab, var(--primary) 22%, transparent), transparent 70%), radial-gradient(40% 45% at 0% 100%, rgba(255,190,150,0.18), transparent 70%), radial-gradient(40% 45% at 100% 100%, rgba(150,220,180,0.18), transparent 70%), var(--surface)',
+        }}
+      >
+        <div className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-[0_30px_70px_-40px_rgba(10,42,74,0.45)]">
           <div
             className="flex transition-transform duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)] motion-reduce:transition-none"
             style={{ transform: `translateX(-${index * 100}%)` }}
@@ -96,7 +102,7 @@ export function ProductShowcase() {
             {[<ResumeSlide key="r" />, <InterviewSlide key="i" />, <ReportSlide key="a" />].map((slide, i) => (
               <div
                 key={SLIDES[i].key}
-                className="h-[470px] w-full shrink-0 overflow-hidden md:h-[540px]"
+                className="h-[470px] w-full shrink-0 overflow-hidden md:h-[520px]"
                 aria-hidden={i !== index}
                 inert={i !== index}
               >

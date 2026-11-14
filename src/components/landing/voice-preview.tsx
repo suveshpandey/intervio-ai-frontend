@@ -38,7 +38,7 @@ export function VoicePreview() {
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid gap-3">
       {voices.map((voice) => {
         const active = playing === voice.id;
         return (

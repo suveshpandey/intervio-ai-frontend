@@ -1,4 +1,3 @@
-import { Reveal } from '@/components/landing/reveal';
 import { cn } from '@/lib/utils';
 
 /**
@@ -57,62 +56,29 @@ const STEPS: Step[] = [
 
 export function HowItWorks() {
   return (
-    <div className="relative mt-14">
-      {/* The line the steps sit on — desktop only, where they're side by side. */}
-      <div
-        aria-hidden
-        className="absolute left-[16.66%] right-[16.66%] top-4 hidden h-px md:block"
-        style={{
-          background:
-            'linear-gradient(90deg, var(--border), color-mix(in oklab, var(--primary) 55%, transparent), var(--border))',
-        }}
-      />
-
-      <div className="grid gap-5 md:grid-cols-3 md:gap-6">
-        {STEPS.map((step, i) => (
-          <Reveal key={step.title} delay={i * 110} className="flex flex-col items-stretch">
-            <div className="flex h-full flex-col">
-              {/* The stop on the line. */}
-              <span
-                className={cn(
-                  'relative z-10 mx-auto grid h-8 w-8 place-items-center rounded-full border font-mono text-xs font-medium',
-                  step.featured
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background text-muted-foreground',
-                )}
-              >
-                {i + 1}
-              </span>
-
-              <div
-                className={cn(
-                  'mt-5 flex flex-1 flex-col rounded-2xl border p-6 transition-colors',
-                  step.featured
-                    ? 'border-primary/40 shadow-pop'
-                    : 'border-border bg-card hover:border-primary/25',
-                )}
-                style={
-                  step.featured
-                    ? {
-                        background:
-                          'linear-gradient(180deg, color-mix(in oklab, var(--primary) 9%, var(--card)), var(--card) 70%)',
-                      }
-                    : undefined
-                }
-              >
-                {step.featured && (
-                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-                    The interview
-                  </p>
-                )}
-                <h3 className="text-lg font-medium tracking-tight">{step.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-                <div className="mt-6 border-t border-border pt-4">{step.detail}</div>
-              </div>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </div>
+    <ol className="space-y-3">
+      {STEPS.map((step, i) => (
+        <li
+          key={step.title}
+          className={cn(
+            'rounded-3xl border bg-card p-5 shadow-float',
+            step.featured ? 'border-primary/40' : 'border-border',
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span
+              className={cn(
+                'grid h-7 w-7 shrink-0 place-items-center rounded-full font-mono text-xs font-medium',
+                step.featured ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
+              )}
+            >
+              {i + 1}
+            </span>
+            <h3 className="text-base font-medium tracking-tight">{step.title}</h3>
+          </div>
+          <div className="mt-3 pl-10">{step.detail}</div>
+        </li>
+      ))}
+    </ol>
   );
 }
